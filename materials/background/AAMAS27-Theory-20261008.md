@@ -187,7 +187,7 @@ R_Q(T)\le A_D\log(T+1)+B_D.
 | 动态程序与AFlow | 有限轨迹账守恒与条件单步净界已证明 | 为增长树、新资源和重复开销另证累计质量率 |
 | Lean与Python实现 | 数学模型及抽象操作事件已形式化并通过编译 | 建立Python到Lean的状态对应与逐步程序精化证明 |
 
-当前理论验收以已声明定理及其显式前提为准；表中的扩展按 [TODO.md](https://github.com/KataDavidXD/AAMAS27/blob/main/TODO.md) 单独安排，优先连接随机奖励和预测误差认证。旧 `Probability`、`Expected`、`Regret`、`GreedyExpected` 的概率/局部bandit结果保留各自的固定gap、confidence/sampling前提，不用于替代Q1–Q9整树证明。
+当前理论验收以已声明定理及其显式前提为准；表中的扩展按 [TODO.md](https://github.com/KataDavidXD/AAMAS27/blob/codex/rag-small-model-selection/TODO.md) 单独安排，优先连接随机奖励和预测误差认证。旧 `Probability`、`Expected`、`Regret`、`GreedyExpected` 的概率/局部bandit结果保留各自的固定gap、confidence/sampling前提，不用于替代Q1–Q9整树证明。
 
 ### 6.9 Lean 阅读习惯与验证
 
@@ -206,7 +206,7 @@ Lean声明先读冒号前的显式假设，再读冒号后的结论；`by` 后�
 
 本轮参考社区 [lean4技能](https://github.com/cameronfreer/lean4-skills/blob/main/plugins/lean4/skills/lean4/SKILL.md) 的保留声明、显式中间目标和公理检查习惯，使用项目现有编译环境；无需安装其插件。关键证明正文的步骤编号与Q1–Q9对应，导读由Lean检查全部引用名。
 
-固定版本为 Lean 4.24.0 / mathlib v4.24.0。历史3299-target构建记录保留在 [algorithm build](https://github.com/KataDavidXD/AAMAS27/blob/main/theory/evidence/algorithm/lean-build.log)；本轮构建、全部源码定理依赖和无占位扫描单独保存于 `theory/evidence/proof-guide-20261004/`，实际结果追加 [EXPERIMENT_RECORDS.md](https://github.com/KataDavidXD/AAMAS27/blob/main/EXPERIMENT_RECORDS.md)。公理检查允许标准 `propext`、`Classical.choice`、`Quot.sound`，检查 `sorryAx` 与项目自定义公理另列。
+固定版本为 Lean 4.24.0 / mathlib v4.24.0。历史3299-target构建记录保留在 [algorithm build](https://github.com/KataDavidXD/AAMAS27/blob/codex/rag-small-model-selection/theory/evidence/algorithm/lean-build.log)；本轮构建、全部源码定理依赖和无占位扫描单独保存于 `theory/evidence/proof-guide-20261004/`，实际结果追加 [EXPERIMENT_RECORDS.md](https://github.com/KataDavidXD/AAMAS27/blob/codex/rag-small-model-selection/EXPERIMENT_RECORDS.md)。公理检查允许标准 `propext`、`Classical.choice`、`Quot.sound`，检查 `sorryAx` 与项目自定义公理另列。
 
 已安装固定版本环境时，在 `theory/lean` 执行 `lake build`；本机现成WSL环境为 `~/.cache/agentuct-proof-20261001/project`，可由 `theory/scripts/check_proof_guide_wsl.sh` 同步源码并构建，不覆盖旧证据。仅运行CPU证明检查，不新增实验fingerprint/SHA/源字节门槛，不调用模型、不改变GPU锁/holder、物理账或事后snapshot规则。
 
@@ -216,13 +216,13 @@ InfoView 的绿色96条信息是导读 `#check` 输出的声明类型。光标�
 
 英文单文件由 `python theory/scripts/build_english_proof_bundle.py` 生成；修改数学内容时编辑原模块，再重新生成。它只依赖Mathlib，可独立检查全部项目证明；下游文件选择导入 `AgentUCTCompleteProofsEN` 或 `AgentUCTPaper`，避免同时导入两个定义同名声明的入口。英文导读导入完整单文件，因此其公理检查直接检查该版本的证明。英文版本的源码位置映射、编译和公理日志保存于 `theory/evidence/proof-guide-en-20261004/`。复现：先运行 `python theory/scripts/audit_proof_guide.py prepare --guide AgentUCTProofGuideEN --evidence proof-guide-en-20261004`，再调用WSL的 `check_proof_guide_wsl.sh proof-guide-en-20261004`，待编译和公理检查全部结束后运行相同参数的 `audit_proof_guide.py finish`。
 
-[英文合订阅读稿](https://github.com/KataDavidXD/AAMAS27/blob/main/Agentic_Optimization/output/pdf/english-proofs-20261004/Technical%20Supplement.pdf) 是本轮保留的50页快照，包含15页主稿与参考文献、35页补充材料；数学证明与形式验证章节位于原PDF第44–50页，共7页。文件原名来自论文工程入口；它包含主文，不能直接作为独立补充材料提交。完整机器检查证明仍以 `.lean` 源码为准。
+[英文合订阅读稿](https://github.com/KataDavidXD/AAMAS27/blob/codex/rag-small-model-selection/Agentic_Optimization/output/pdf/english-proofs-20261004/Technical%20Supplement.pdf) 是本轮保留的50页快照，包含15页主稿与参考文献、35页补充材料；数学证明与形式验证章节位于原PDF第44–50页，共7页。文件原名来自论文工程入口；它包含主文，不能直接作为独立补充材料提交。完整机器检查证明仍以 `.lean` 源码为准。
 
 用户限定本轮只处理补充材料与证明。独立阅读文件为：
 
-- [中文理论与逐步证明导读（7页）](https://github.com/KataDavidXD/AAMAS27/blob/main/Agentic_Optimization/output/pdf/proof-reading-20261004/AgentUCT_Theory_and_Proof_Guide_ZH.pdf)：对象、量词与假设，E1–E4操作语义，Q1–Q9主证明，条件净值/预算/推荐结论，已证明结果与扩展方向及一个完整Lean证明示例。385个定理的完整机器证明体仍在Lean源码中。
-- [英文证明与形式验证章节（8页）](../pdf/AgentUCT_Proof_Sections_EN.pdf)：由 [Proofs_Standalone_EN.tex](https://github.com/KataDavidXD/AAMAS27/blob/main/Agentic_Optimization/Proofs_Standalone_EN.tex) 独立编译，包含“Proven Results and Extension Directions”。章节、公式和表格从1独立编号；主文引用标为 `M.`，完整补充材料引用标为 `S.`。完整机器证明体仍在Lean源码中。
-- [独立英文补充材料（40页，含上述证明及所引文献）](../pdf/AgentUCT_Supplement_Only_EN.pdf)：由 [Supplement_Standalone_EN.tex](https://github.com/KataDavidXD/AAMAS27/blob/main/Agentic_Optimization/Supplement_Standalone_EN.tex) 独立编译，复用现有补充源文件，不含主文。公式、图、表从1编号，主文引用标为 `M.`。采用10pt单栏阅读版，修复长名称/路径越界、标题留白及不必要的强制分页。历史50页合订稿和截页版另保留。
+- [中文理论与逐步证明导读（7页）](https://github.com/KataDavidXD/AAMAS27/blob/codex/rag-small-model-selection/Agentic_Optimization/output/pdf/proof-reading-20261004/AgentUCT_Theory_and_Proof_Guide_ZH.pdf)：对象、量词与假设，E1–E4操作语义，Q1–Q9主证明，条件净值/预算/推荐结论，已证明结果与扩展方向及一个完整Lean证明示例。385个定理的完整机器证明体仍在Lean源码中。
+- [英文证明与形式验证章节（8页）](../pdf/AgentUCT_Proof_Sections_EN.pdf)：由 [Proofs_Standalone_EN.tex](https://github.com/KataDavidXD/AAMAS27/blob/codex/rag-small-model-selection/Agentic_Optimization/Proofs_Standalone_EN.tex) 独立编译，包含“Proven Results and Extension Directions”。章节、公式和表格从1独立编号；主文引用标为 `M.`，完整补充材料引用标为 `S.`。完整机器证明体仍在Lean源码中。
+- [独立英文补充材料（40页，含上述证明及所引文献）](../pdf/AgentUCT_Supplement_Only_EN.pdf)：由 [Supplement_Standalone_EN.tex](https://github.com/KataDavidXD/AAMAS27/blob/codex/rag-small-model-selection/Agentic_Optimization/Supplement_Standalone_EN.tex) 独立编译，复用现有补充源文件，不含主文。公式、图、表从1编号，主文引用标为 `M.`。采用10pt单栏阅读版，修复长名称/路径越界、标题留白及不必要的强制分页。历史50页合订稿和截页版另保留。
 
 构建入口为 `theory/scripts/build_proof_reading_pdfs.py`，用配置了ReportLab/pypdf的Python运行：中文由已有README与证明源生成；英文调用 `build_standalone_english_readers.py`，从TeX独立编译，不再截页导出。外部主文编号读取现有 `output/pdf/AnonymousSubmission2027.aux`，主文更新编号后应重建阅读版。当前英文两册均已全页渲染目视，字体嵌入、文字边界和引用解析通过；证据在 [独立编译](../../evidence/historical/standalone-readers-20261004/build.json) 与 [页面验收](../../evidence/historical/standalone-readers-20261004/layout-review.json)。本轮只改阅读版排版，数学证明与实验结果未改；主文源码和主文PDF未编辑。
 
