@@ -1,0 +1,16 @@
+RATE-01: close depth induction for operational cumulative terminal-quality regret.
+
+Use one positive lower bound delta for nonzero static optimal-value edge gaps
+in the finite terminal table. It exists by finiteness; it is not a same-cache
+dynamic utility gap. Set K to the largest legal branching factor over the tree.
+At depth zero use A=B=0. Given A_d,B_d, let tau_d be the largest nodeRateBurnin
+over tree nodes, including the derived cache coverage time, and define
+ A_(d+1)=K*(A_d+4*c^2/delta^2),
+ B_(d+1)=1+K*(B_d+tau_d+1).
+Prove for every valid global history prefix and every node of remaining depth
+at most d: D_p <= A_d*log(N_p+1)+B_d. Child rates are discharged by induction.
+Then specialize zero-after-cache to the actual full cold forecast definition.
+Expose assumptions: finite fixed table, full panel, successful persistent
+cache, nonnegative normalized reference law, bounded fixed resource forecasts,
+c>0, raw reward backup and unvisited-first/index-max allocation. Constants do
+not depend on the history length. This is terminal-quality regret, not endpoint J.

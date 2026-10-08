@@ -1,0 +1,3 @@
+'AgentUCTPaper.full_panel_live_completion_quotient' depends on axioms: [propext, Classical.choice, Quot.sound]
+'AgentUCTPaper.full_panel_live_price_update' depends on axioms: [propext, Classical.choice, Quot.sound]
+'AgentUCTPaper.unpublished_price_revision_changes_residual' depends on axioms: [propext, Classical.choice, Quot.sound]

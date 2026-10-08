@@ -1,0 +1,11 @@
+OBJECTIVES-01: training recommendation and distinct-policy physical costs.
+
+Connect root terminal-quality deficit to the actual bestCompleted training
+recommendation, including exact optimality once the proved finite coverage
+threshold is reached. For cumulative net reward compare a second event history
+using its own metered cache trajectory and the same evaluation count. Prove
+policy net regret <= root quality deficit + lambda*(actual cold budget + actual
+recurring overhead), with lambda>=0. The comparator's cache is not replaced by
+the algorithm's cache. If the repeated overhead totals agree, cancel them and
+retain just the finite cold budget. These are cumulative objectives; validation
+selection, population quality and endpoint J still require separate treatment.

@@ -1,0 +1,12 @@
+COVERAGE-01: finite recursive coverage of actual tree visits and qid-prefix cache.
+
+Define an explicit, conservative threshold using finite topology and depth:
+ C(0)=1,
+ C(d+1)=1+max_(p in workflowNodes) 2*explorationWindowStart(c,H,K_p,C(d)).
+For a finite prefix-antichain terminal set and a BoundedTreeRun with c>0,
+N_p >= C(d) and remaining depth <= d imply every terminal below p has positive
+actual backed count. At the root N_root equals completed evaluations T.
+Thus T >= C(total depth) covers all terminal demands in the SAME metered run.
+Derive physical/materialized and restorable cache statements from the successful
+persistent transition model, rather than assuming a cache-saturation time.
+These constants can be very large and are not practical budget recommendations.

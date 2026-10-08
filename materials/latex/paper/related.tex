@@ -1,0 +1,26 @@
+\section{Related Work and Contribution}
+UCB1 supplies confidence-based allocation and logarithmic cumulative regret for bounded stochastic bandits \citep{auer2002finite}. UCT applies this allocation within a tree, where descendant policies can change the return distribution \citep{kocsis2006bandit}; unfavorable transients can depend strongly on tree depth \citep{coquelin2007bandit}. Our contribution concerns the execution state and cost term used by that allocation rule. The logarithmic counting argument remains classical.
+
+Pipeline reuse and cost-sensitive optimization also have precedents. FLASH combines cost-sensitive Bayesian pipeline optimization with intermediate-result caching, including LRU eviction \citep{zhang2016flash}. EEIPU explicitly conditions acquisition on memoized prefixes and models non-memoized stage costs with Gaussian processes \citep{essofi2024memoization}. MSBO uses a saved-state inventory and intermediate observations to choose between starting and advancing cascade evaluations \citep{torresi2026multistage}. These methods establish that caching and search allocation can be designed jointly. The distinction studied here is qid-specific execution reuse inside UCT and the effect of omitting the remaining suffix from its cost index.
+
+Agentic workflow search is another close comparison. AFlow searches code-defined workflows using LLM edits, execution feedback, and a mixture of score-based and uniform selection probabilities \citep{zhang2024aflow}. It provides an appropriate application-level comparison when the executor and proposal mechanism are held fixed. Metareasoning instead optimizes the value of a final decision against the cost of obtaining evidence \citep{hay2012selecting}; that objective motivates our endpoint evaluation but is different from the local cumulative regret proved here.
+
+\begin{table*}[t]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X@{}}
+\toprule
+Closest comparison & Established mechanism & AgentUCT question addressed here\\
+\midrule
+FLASH / EEIPU & Pipeline caching coupled to cost-sensitive BO acquisition & Current qid--prefix bills inside a UCT index, with raw reward backups\\
+MSBO & Resumable cascades, intermediate observations, and stage selection & Cost of obtaining a terminal reward after the current prefix decision\\
+AFlow & Code-workflow search using edits and execution feedback & Separate executor reuse from changes in cost-aware search allocation\\
+Metareasoning & Final-decision utility less computation cost & Distinguish endpoint $J$ from the local regret comparator\\
+This work & Same-cache UCB, signed suffix error, and materialization accounting & Conditions for an exact next-edge reduction, an amortized approximation, or linear full-cost regret\\
+\bottomrule
+\end{tabularx}
+\caption{Conceptual comparison with nearby methods. These are differences in the analyzed decision and accounting models, not a claim of empirical superiority.}
+\label{tab:related}
+\end{table*}
+
+The theoretical contribution is the connection between a physical reuse ledger and the error of a truncated-cost selection rule. In particular, Theorem~\ref{thm:nextcache} converts omitted cold work into a finite additive regret term, whereas Theorem~\ref{thm:nextlinear} shows why recurring omitted work cannot use that argument. Qid--prefix notation, memoization, and the $\log T$ order alone are not novelty claims.

@@ -1,0 +1,11 @@
+FORECAST-01: full reference completion bills satisfy the operational proof conditions.
+
+For each legal child, a nonnegative normalized reference distribution weights
+the predicted cold bill of every terminal below that child. Bills use the
+actual restorable qid-prefix cache after the same completed event history and
+fixed nonnegative predicted resource weights. With gamma=beta/C_ref >=0,
+the penalty lies in [0,gamma*total predicted workflow resource weight].
+After the derived recursive coverage threshold, it is zero for every child.
+The reference law may depend on history; it need not equal the execution law.
+Neither claim certifies prediction accuracy or expected actual cost. Recurring
+action-dependent overhead is not included in the vanishing-penalty statement.

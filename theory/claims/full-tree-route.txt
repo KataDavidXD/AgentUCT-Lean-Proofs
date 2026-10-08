@@ -1,0 +1,78 @@
+Historical G04 candidate route, superseded on 2026-10-01 by the verified theorem
+TreeRate.cold_forecast_uniform_root_log_bound. MAIN_RESULTS.txt gives the exact
+accepted conditions/constants and PROGRESS.txt gives current validation status.
+The text below is the original candidate plan, preserved for provenance; in
+particular its tentative node-specific constants are not the final uniform ones.
+
+Already checked foundations:
+- TreeBackup/TreeProtocol: operational statistics and progressive expansion.
+- TreeExecution/TreeCheckpoint: the same events drive physical qid-prefix work.
+- TreeReturns: Q_s=V_s-D_s/N_s for fixed finite terminal rewards.
+- TreeAllocation/TreeWindow: bounded adaptive Q and bounded penalties force
+  explicit local exploration, without an iid or MGF premise.
+- TreeCacheVisit: a visited prefix is cached for the complete fixed panel.
+
+Outstanding structural bridge
+Define a finite prefix topology and the recursive/local action histories of a
+LegalTreeRun. Prove child visits equal pullCount on the node's local action
+history. Parent visits equal local child traversals plus birth offset, with
+offset 0 at the root and 1 at a non-root internal node. Its birth evaluation is
+the one rollout sample before its first local expansion. Prove the actual
+unexpanded-first loop gives the unvisited-first initialization rule; existing
+successful children have positive visits. Add maximal treeIndex choice to this
+operational transition model. Do not simply assume the target regret rate.
+
+Coverage and cache saturation
+For a node with K children let F_s(m)=2*explorationWindowStart(c,H,K,m).
+A conservative recursive visit requirement is C_leaf=1 and
+ C_s = 1 + F_s(max_child C_child).
+Prove this from actual child counts. At the root the resulting T_cache ensures
+every terminal workflow has been evaluated, hence all demands are cached.
+For cold-only complete forecasts (any nonnegative resource predictions), all
+candidate penalties then vanish. Candidate-independent future overhead can be
+treated as a common index shift, but action-dependent recurring overhead cannot
+be removed this way. Relate global and local time explicitly: local time at least
+T_cache is sufficient for a local decision to occur after global saturation.
+
+Candidate deterministic induction for cumulative terminal-quality regret
+Take a positive gap lower bound delta for nonzero optimal-value edge gaps in the
+fixed finite tree. This is a reward-value gap, not a dynamic same-cache net gap.
+Suppose child deficits satisfy D_i(n)<=A_i*log(n+1)+B_i from induction on depth,
+including D_i(0)=0. Let A=max A_i, B=max B_i. A deliberately loose target
+ m = ceil(max(1, (32*A/delta)^2 + 8*B/delta))
+would ensure D_i(n)/n<=delta/4 once n>=m, using log(n+1)<=4*sqrt(n).
+This numerical implication itself still needs a Lean proof.
+
+Set local burn-in tau=max(T_cache,F_s(m)). After tau, an optimal child has
+Q>=V_s-delta/4 and a selected child always has Q<=its own V_child. Once the
+cost penalty is a common shift, selection of a positive-gap child implies
+ N_child <= 4*c^2*log(n+1)/delta^2.
+Use the checked count-injectivity argument for late selections, plus at most
+tau early selections. Prove the exact recursive deficit identity
+ D_s(n)=birthLoss_s + sum_i [N_i*Delta_i + D_i(N_i)],
+where 0<=birthLoss_s<=1 and child counts sum to n minus the birth offset.
+Do not substitute the old sum of dynamic local regrets for this identity.
+
+A conservative candidate recursion is
+ A_s = K*(A + 4*c^2/delta^2),
+ B_s = 1 + K*(B + tau + 1),
+with A_leaf=B_leaf=0. Verify all indexing, initialization and log shifts before
+accepting these constants. They can have enormous nested-exponential dependence
+through F_s and the recursive visit targets; disclose them rather than writing
+an unexplained instance-dependent constant. The index permits the actual c=1.4;
+it requires c>0, not c=sqrt(2), in this deterministic finite-table main result.
+
+Later G05 connection
+If the root bound is established, its D_root is actual cumulative terminal-
+quality regret. best-training simple gap <= D_root/T is already checked.
+For cumulative net reward, compare another policy using its own cache ledger;
+nonnegative comparator cost plus the finite cold budget gives an additive
+lambda*B_cache term, with repeated overhead kept explicitly. This is distinct
+from endpoint J and validation-shortlist selection. Endpoint J can retain a
+constant cost gap even if training quality converges; it is not automatically
+optimized by a logarithmic cumulative-quality bound.
+
+Sources inspected for scope, not imported as axioms:
+https://sites.ualberta.ca/~szepesva/papers/ecml06.pdf
+https://arxiv.org/abs/cs/0703062
+https://arxiv.org/abs/1902.05213

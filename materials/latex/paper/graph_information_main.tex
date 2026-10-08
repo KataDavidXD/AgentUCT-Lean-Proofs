@@ -1,0 +1,61 @@
+\section{Which Cache Information Changes Allocation?}
+\label{sec:graph-information}
+The allowed query demands determine the cost information a search must retain.
+A cache is sufficient for restoration only when the compatible execution objects
+are available. For pricing, several queries can sometimes be aggregated.
+
+\begin{theorem}[Demand-profile quotient]
+\label{thm:demand-quotient}
+Fix the family of allowed panels $\mathcal Q_1,\ldots,\mathcal Q_m$.
+Group queries by their membership profiles
+$q\sim r$ if $\ind\{q\in\mathcal Q_j\}=\ind\{r\in\mathcal Q_j\}$ for every $j$.
+For each group $C$ and prefix $u$, store
+\begin{equation}
+ R_K(C,u)=\sum_{q\in C}\ind\{(q,u)\notin K\}w_{q,u}.
+ \label{eq:group-residual}
+\end{equation}
+The bill for an allowed demand $\mathcal Q_j\times P_x$ equals
+\[
+ \sum_{u\in P_x}\sum_{C\subseteq\mathcal Q_j}R_K(C,u).
+\]
+Publishing that demand sets precisely these group--prefix cells to zero.
+Conversely, merging two queries that some allowed panel separates loses the
+ability to recover every panel bill from group residual sums, already with
+unit weights and arbitrary binary residual states.
+\end{theorem}
+
+\paragraph{Proof.}
+Every allowed panel contains either all or none of a profile group. Partitioning
+the query sum therefore gives its exact bill, and publication removes precisely
+the demanded cells. For the converse, swap one unit of uncached demand between
+two merged queries. The group total stays fixed, while a separating panel's bill
+changes. A common summary cannot recover both bills. Lean checks both directions.
+
+\begin{proposition}[Full-panel compression]
+\label{prop:graph-compression}
+Fix the panel $\mathcal Q$ and resource weights. For an arbitrary cache $K$, define the residual prefix bill
+\begin{equation}
+ r_K(u)=\sum_{q\in\mathcal Q}\ind\{(q,u)\notin K\}w_{q,u}.
+ \label{eq:residual-prefix}
+\end{equation}
+For a full-panel demand $\mathcal Q\times P_x$, its cold bill is $\sum_{u\in P_x}r_K(u)$. Publishing this demand sets $r_K(u)$ to zero on $P_x$ and leaves the other residual bills unchanged. If $K=\mathcal Q\times S$, the bill further reduces to $\sum_{u\in P_x\setminus S}\bar w_u$, where $\bar w_u=\sum_qw_{q,u}$. Empty initialization followed by full-panel publication preserves this rectangular form.
+\end{proposition}
+
+The main experiment uses this fixed-full-panel case. Its completion bills admit
+an exact prefix-level quotient. The qid--prefix model also specifies the physical
+checkpoints and the query-conditioned price observations; these are separate
+from the aggregated cost totals. Online price revisions refresh the residual
+sums, as detailed in the supplementary material.
+
+Selective demands can require finer information. Consider two queries, prefixes
+$u,v$, unit prices, and the caches
+\[
+ K_1=\{(q_0,u),(q_1,v)\},\quad
+ K_2=\{(q_1,u),(q_0,v)\}.
+\]
+Both prefixes have one full-panel residual unit in either state.
+On query $q_0$, their bills are $(0,1)$ and $(1,0)$. Equal-quality allocation
+therefore reverses. The supplement gives a separation reachable from empty
+caches through complete overlapping-panel evaluations. The result identifies
+necessary information within partition-based residual summaries; bitsets and
+other lossless encodings can preserve that same information.

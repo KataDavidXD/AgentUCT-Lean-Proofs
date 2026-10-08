@@ -1,0 +1,102 @@
+% Three independent floats in full scope: input directly, without an outer table.
+% Actual seed-level scores; each full-scope budget block has 20 rows.
+% Same endpoints can reuse a saved test measurement across cutoffs; these are not independent repetitions.
+\begin{table}[t]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\caption{All twenty validation-selected primary outcomes at the 16M search cutoff. F1 and EM are percentages.}
+\label{tab:seed-values-b16000000}
+\begin{tabular}{rlrrr}
+\toprule
+Budget (M) & Method & Seed & F1 (\%) & EM (\%) \\
+\midrule
+16 & AgentUCT & 11 & 69.5109 & 54.6667 \\
+16 & AgentUCT & 23 & 67.0514 & 52.3333 \\
+16 & AgentUCT & 37 & 69.1952 & 54.0000 \\
+16 & AgentUCT & 53 & 63.2059 & 49.0000 \\
+16 & AgentUCT & 71 & 68.0144 & 51.6667 \\
+16 & MCTS-UCT & 11 & 69.4443 & 54.3333 \\
+16 & MCTS-UCT & 23 & 67.0514 & 52.3333 \\
+16 & MCTS-UCT & 37 & 69.1952 & 54.0000 \\
+16 & MCTS-UCT & 53 & 63.2059 & 49.0000 \\
+16 & MCTS-UCT & 71 & 68.0144 & 51.6667 \\
+16 & AgentUCT-NextC & 11 & 69.5109 & 54.6667 \\
+16 & AgentUCT-NextC & 23 & 67.0514 & 52.3333 \\
+16 & AgentUCT-NextC & 37 & 69.1952 & 54.0000 \\
+16 & AgentUCT-NextC & 53 & 63.2059 & 49.0000 \\
+16 & AgentUCT-NextC & 71 & 68.0144 & 51.6667 \\
+16 & MCTS-Random & 11 & 69.5109 & 54.6667 \\
+16 & MCTS-Random & 23 & 67.0514 & 52.3333 \\
+16 & MCTS-Random & 37 & 69.1952 & 54.0000 \\
+16 & MCTS-Random & 53 & 63.2059 & 49.0000 \\
+16 & MCTS-Random & 71 & 68.0144 & 51.6667 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\caption{All twenty validation-selected primary outcomes at the 24M search cutoff. F1 and EM are percentages.}
+\label{tab:seed-values-b24000000}
+\begin{tabular}{rlrrr}
+\toprule
+Budget (M) & Method & Seed & F1 (\%) & EM (\%) \\
+\midrule
+24 & AgentUCT & 11 & 69.5109 & 54.6667 \\
+24 & AgentUCT & 23 & 69.5228 & 54.3333 \\
+24 & AgentUCT & 37 & 69.1975 & 54.6667 \\
+24 & AgentUCT & 53 & 69.9657 & 54.6667 \\
+24 & AgentUCT & 71 & 69.6305 & 54.6667 \\
+24 & MCTS-UCT & 11 & 69.4443 & 54.3333 \\
+24 & MCTS-UCT & 23 & 67.3162 & 52.0000 \\
+24 & MCTS-UCT & 37 & 68.6871 & 54.0000 \\
+24 & MCTS-UCT & 53 & 66.5768 & 50.3333 \\
+24 & MCTS-UCT & 71 & 68.0144 & 51.6667 \\
+24 & AgentUCT-NextC & 11 & 69.5109 & 54.6667 \\
+24 & AgentUCT-NextC & 23 & 69.5228 & 54.3333 \\
+24 & AgentUCT-NextC & 37 & 69.1975 & 54.6667 \\
+24 & AgentUCT-NextC & 53 & 63.2059 & 49.0000 \\
+24 & AgentUCT-NextC & 71 & 67.7338 & 54.0000 \\
+24 & MCTS-Random & 11 & 69.3527 & 55.3333 \\
+24 & MCTS-Random & 23 & 67.6926 & 52.3333 \\
+24 & MCTS-Random & 37 & 67.6761 & 53.0000 \\
+24 & MCTS-Random & 53 & 69.4550 & 54.3333 \\
+24 & MCTS-Random & 71 & 68.0144 & 51.6667 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\caption{All twenty validation-selected primary outcomes at the 32M search cutoff. F1 and EM are percentages.}
+\label{tab:seed-values-b32000000}
+\begin{tabular}{rlrrr}
+\toprule
+Budget (M) & Method & Seed & F1 (\%) & EM (\%) \\
+\midrule
+32 & AgentUCT & 11 & 69.5109 & 54.6667 \\
+32 & AgentUCT & 23 & 69.5228 & 54.3333 \\
+32 & AgentUCT & 37 & 69.1975 & 54.6667 \\
+32 & AgentUCT & 53 & 69.9657 & 54.6667 \\
+32 & AgentUCT & 71 & 69.6305 & 54.6667 \\
+32 & MCTS-UCT & 11 & 69.4443 & 54.3333 \\
+32 & MCTS-UCT & 23 & 67.3162 & 52.0000 \\
+32 & MCTS-UCT & 37 & 68.6871 & 54.0000 \\
+32 & MCTS-UCT & 53 & 66.5768 & 50.3333 \\
+32 & MCTS-UCT & 71 & 68.0144 & 51.6667 \\
+32 & AgentUCT-NextC & 11 & 69.5109 & 54.6667 \\
+32 & AgentUCT-NextC & 23 & 69.5228 & 54.3333 \\
+32 & AgentUCT-NextC & 37 & 64.8892 & 51.0000 \\
+32 & AgentUCT-NextC & 53 & 69.1490 & 53.6667 \\
+32 & AgentUCT-NextC & 71 & 68.0144 & 51.6667 \\
+32 & MCTS-Random & 11 & 69.3527 & 55.3333 \\
+32 & MCTS-Random & 23 & 67.6926 & 52.3333 \\
+32 & MCTS-Random & 37 & 69.4880 & 55.0000 \\
+32 & MCTS-Random & 53 & 69.4550 & 54.3333 \\
+32 & MCTS-Random & 71 & 68.0144 & 51.6667 \\
+\bottomrule
+\end{tabular}
+\end{table}
+

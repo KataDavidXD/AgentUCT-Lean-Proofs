@@ -1,0 +1,5 @@
+import AgentUCTPaper.FullPanelLivePrices
+
+#print axioms AgentUCTPaper.full_panel_live_completion_quotient
+#print axioms AgentUCTPaper.full_panel_live_price_update
+#print axioms AgentUCTPaper.unpublished_price_revision_changes_residual

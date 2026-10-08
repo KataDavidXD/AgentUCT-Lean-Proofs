@@ -1,0 +1,35 @@
+\section{Connecting the Theory to Experiments}
+\label{sec:experiments}
+The next-edge rule and the complete continuation rule should be evaluated as distinct cost horizons. Both retain the same UCB reward statistics and exploration. The saved No12 v3 RAG pilot has 20 runs, all with \texttt{continuation\_mean}, a constant search coefficient, and exploration coefficient $1.4$. Its four cells cross UCT versus AgentUCT selection with random versus cost-biased rollout. Those runs do not constitute a next-edge ablation. Earlier manuscript results used a different next-edge protocol and cannot be relabeled as continuation-cost results.
+
+\subsection{A Frozen-History Cost Diagnostic}
+We replay the 10 AgentUCT runs on their saved pre-decision histories. These development runs use an eight-query HotpotQA training panel \citep{yang2018hotpotqa}, 24 evaluations, and seeds 11, 23, 37, 53, and 71 for each rollout setting. The fixed search coefficient is $\beta=2$ with normalization $C_{\mathrm{ref}}=12982.16412928$. Successful qid--prefix charge keys reconstruct the materialization snapshot before every decision. The production estimator then recomputes both cost horizons using the same forecasts and candidate list. Every recomputed continuation cost matches its saved value within numerical tolerance, covering 930 candidate comparisons.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabularx}{\columnwidth}{@{}>{\raggedright\arraybackslash}Xr@{}}
+\toprule
+Frozen-history diagnostic & Count\\
+\midrule
+Replayed AgentUCT runs & 10\\
+Selection decisions / candidate costs & 270 / 930\\
+Decisions with every next-edge penalty zero & 270 / 270\\
+Next-edge choice equals ordinary UCB choice & 270 / 270\\
+Next-edge choice differs from continuation choice & 64 / 270\\
+\bottomrule
+\end{tabularx}
+\caption{Observed decisions under saved histories, not rerun trajectories. Replacing an index on a stored history does not reveal the final quality or cost of following that alternative policy.}
+\label{tab:nextreplay}
+\end{table}
+
+The zero penalties have a structural explanation. Selection visits already observed children. With a fixed full panel and retained child checkpoints, their next edges have already executed for every query. The implemented immediate penalty is therefore zero, even when unexplored suffixes still require work. In this case the next-edge selection rule reduces exactly to ordinary UCB. Lean verifies both the zero-penalty identity and the resulting equality of maximizer sets. This does not imply zero next-edge costs during expansion or rollout.
+
+The replay shows where the two horizons make different allocation decisions. It does not estimate their counterfactual performance. The existing pilot also distinguishes selection from rollout: its larger RAG cost changes came from the rollout intervention, while endpoint quality and deeper tree coverage limited interpretation of selection gains. In the AFlow development pilot, extra proposer and repair charges exposed a recurring cost omitted by the future-edit heuristic. Such work belongs in the repeated-overhead term, not the finite cache budget.
+
+\subsection{A Matched Test of the Theoretical Mechanism}
+The decisive comparison holds the executor, qid panel, cache namespace, reward observation rule, expansion, rollout, recommendation rule, and coefficients fixed while changing selection among ordinary UCT, next-edge AgentUCT, and continuation-cost AgentUCT. A cache-off comparison separately measures execution reuse. The next-edge and continuation predictions must be computed from the same pre-decision snapshot; using different realized caches after the policies diverge would confound a forecast comparison.
+
+The estimator diagnostic should report omitted-tail differences across actions, the frequency of negative residuals caused by sparse-checkpoint or baseline semantics, forecast error against realized cold work, and recurring proposer/repair costs. Estimator runtime is charged separately in its measured unit. A small absolute cost MAE is insufficient if errors reverse near-tied net values.
+
+For a local-regret experiment, use a declared fixed reward table or controlled stochastic streams, known current bills, and the same-cache oracle in~\eqref{eq:regret}. Plot regret against observation count and report the cold-work budget and repeated overhead. For workflow performance, report held-out recommendation quality and $J$ against actual search expenditure. These readouts test different claims. Neither a fitted logarithmic curve nor the 24-evaluation pilot establishes the theorem's assumptions for arbitrary adaptive UCT.

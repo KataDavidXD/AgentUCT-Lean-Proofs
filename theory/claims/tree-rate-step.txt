@@ -1,0 +1,10 @@
+RATE-STEP-01: operational suboptimal-child counts from child induction bounds.
+
+For the actual finite tree run, suppose a proved induction bound on every
+child's cumulative deficit holds for every global prefix of that run. Use the
+explicit exploration window to make the best child's backed mean accurate
+after a fixed local burn-in. After the cold-cost saturation time the index
+has zero cost shift. Derive each positive-gap child's count bound from actual
+index maximization and injective prior counts. Do not assume a concentration
+event or a bound on the parent's own deficit. The child bounds will be supplied
+by depth induction, not asserted as a final theorem assumption.

@@ -1,0 +1,16 @@
+% Retained 32M prefix only; complete evaluations, including initialization. Mean +/- sample SD over five matched seeds.
+% Costs are whole evaluation bills grouped by first query action, not query-component costs.
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Root query action & AgentUCT & MCTS-UCT & AgentUCT-NextC & MCTS-Random \\
+\midrule
+decomposition & $2.20 \pm 0.84$ & $2.00 \pm 0.00$ & $2.00 \pm 0.00$ & $2.40 \pm 0.89$ \\
+hyde & $2.80 \pm 0.84$ & $2.20 \pm 0.84$ & $1.80 \pm 0.45$ & $2.40 \pm 0.89$ \\
+identity & $2.00 \pm 0.00$ & $2.40 \pm 0.55$ & $2.20 \pm 0.45$ & $1.80 \pm 0.45$ \\
+query2doc & $2.20 \pm 0.45$ & $2.20 \pm 0.45$ & $2.60 \pm 0.55$ & $1.40 \pm 0.89$ \\
+query2doc:q=1 & $2.20 \pm 0.45$ & $2.00 \pm 0.00$ & $2.60 \pm 0.55$ & $2.80 \pm 1.30$ \\
+query2doc:q=3 & $2.40 \pm 0.55$ & $2.20 \pm 0.45$ & $2.00 \pm 0.00$ & $2.40 \pm 0.89$ \\
+rewrite & $1.80 \pm 0.45$ & $2.40 \pm 0.55$ & $2.20 \pm 0.45$ & $2.20 \pm 1.64$ \\
+synonyms & $2.00 \pm 0.00$ & $2.40 \pm 0.55$ & $2.20 \pm 0.45$ & $2.40 \pm 1.52$ \\
+\bottomrule
+\end{tabular}

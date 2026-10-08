@@ -1,0 +1,23 @@
+import AgentUCTPaper
+
+#print axioms AgentUCTPaper.nextUnpaidBill_nonneg
+#print axioms AgentUCTPaper.nextUnpaidBill_le_complete
+#print axioms AgentUCTPaper.nextUnpaidBill_skip_cached
+#print axioms AgentUCTPaper.nextUnpaidBill_zero_of_covered
+#print axioms AgentUCTPaper.nextUnpaidBill_cached_edge_counterexample
+#print axioms AgentUCTPaper.dominated_cold_shared_root_log_bound
+
+#print axioms AgentUCTPaper.cold_forecast_uniform_root_log_bound
+#print axioms AgentUCTPaper.next_edge_own_cache_log_bound
+#print axioms AgentUCTPaper.full_panel_residual_quotient
+#print axioms AgentUCTPaper.completion_index_threshold
+#print axioms AgentUCTPaper.equal_priority_minimizes_completion
+#print axioms AgentUCTPaper.completion_index_error
+#print axioms AgentUCTPaper.completion_index_cumulative_error
+#print axioms AgentUCTPaper.prefix_spend_le
+#print axioms AgentUCTPaper.own_cache_budget_coverage
+#print axioms AgentUCTPaper.next_edge_ranking_reversal
+#print axioms AgentUCTPaper.next_edge_omitted_error
+#print axioms AgentUCTPaper.GraphWitness.scaled_randomized_excess
+#print axioms AgentUCTPaper.shared_cache_uniform_root_log_bound
+#print axioms AgentUCTPaper.fixed_panel_family_log_bound

@@ -1,0 +1,14 @@
+{
+  "lean_extension": "leanprover.lean4-0.0.240",
+  "workspace": "theory/lean",
+  "automatic_dependency_builds": true,
+  "Chinese_guide_UI": {
+    "evidence": "vscode-zh-clean.png",
+    "source": "user-supplied current screenshot",
+    "errors": 0,
+    "warnings": 0,
+    "informational_messages": 96
+  },
+  "English_guide_UI": "not observed; checked by native compiler",
+  "computer_use": "stopped after the physical Escape interruption; no further UI automation"
+}

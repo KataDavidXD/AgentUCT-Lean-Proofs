@@ -1,0 +1,224 @@
+% Requires booktabs; include this combined file OR its component tables, not both.
+\begin{table}[p]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\caption{Codes used in the complete workflow dictionaries. Each numbered code denotes the exact saved action; the code sequence preserves every component and its order.}
+\label{tab:rag-config-code-definitions}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Prefix & Component \\
+\midrule
+Q & Query transformation \\
+R & Retrieval backend and fusion \\
+S & Evidence selection \\
+K & Retrieved-document count \\
+C & Retrieval continuation decision \\
+RR & Reranking \\
+M & Context-document count \\
+X & Context ordering \\
+A & Answer generation \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[p]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\caption{Validation-selected RAG configurations at 16M weighted-token search budget. Rank is the auxiliary position in the saved training Top5; validation chooses the endpoint and breaks ties by that rank. F1 and EM are percentages on the fixed 300-question panels; the test sentinel is excluded. Repeated T codes reference the same stored test measurement, not independent replications.}
+\label{tab:rag-best-configs-16m}
+\begin{tabular}{@{}rlrrrrrl@{}}
+\toprule
+Seed & Method & Cfg & Rank & Valid F1 & Test F1 & Test EM & Test source \\
+\midrule
+11 & AgentUCT & C17 & 1 & 74.36 & 69.51 & 54.67 & T01 \\
+11 & MCTS-UCT & C17 & 1 & 74.63 & 69.44 & 54.33 & T30 \\
+11 & AgentUCT-NextC & C17 & 1 & 74.36 & 69.51 & 54.67 & T10 \\
+11 & MCTS-Random & C17 & 1 & 74.36 & 69.51 & 54.67 & T21 \\
+23 & AgentUCT & C18 & 1 & 71.54 & 67.05 & 52.33 & T03 \\
+23 & MCTS-UCT & C18 & 1 & 71.54 & 67.05 & 52.33 & T32 \\
+23 & AgentUCT-NextC & C18 & 1 & 71.54 & 67.05 & 52.33 & T12 \\
+23 & MCTS-Random & C18 & 1 & 71.54 & 67.05 & 52.33 & T23 \\
+37 & AgentUCT & C12 & 1 & 70.46 & 69.20 & 54.00 & T05 \\
+37 & MCTS-UCT & C12 & 1 & 70.46 & 69.20 & 54.00 & T34 \\
+37 & AgentUCT-NextC & C12 & 1 & 70.46 & 69.20 & 54.00 & T15 \\
+37 & MCTS-Random & C12 & 1 & 70.46 & 69.20 & 54.00 & T26 \\
+53 & AgentUCT & C03 & 3 & 73.07 & 63.21 & 49.00 & T07 \\
+53 & MCTS-UCT & C03 & 3 & 73.07 & 63.21 & 49.00 & T36 \\
+53 & AgentUCT-NextC & C03 & 3 & 73.07 & 63.21 & 49.00 & T17 \\
+53 & MCTS-Random & C03 & 3 & 73.07 & 63.21 & 49.00 & T28 \\
+71 & AgentUCT & C05 & 1 & 71.70 & 68.01 & 51.67 & T09 \\
+71 & MCTS-UCT & C05 & 1 & 71.70 & 68.01 & 51.67 & T37 \\
+71 & AgentUCT-NextC & C05 & 1 & 71.70 & 68.01 & 51.67 & T18 \\
+71 & MCTS-Random & C05 & 1 & 71.70 & 68.01 & 51.67 & T29 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[p]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\caption{Validation-selected RAG configurations at 24M weighted-token search budget. Rank is the auxiliary position in the saved training Top5; validation chooses the endpoint and breaks ties by that rank. F1 and EM are percentages on the fixed 300-question panels; the test sentinel is excluded. Repeated T codes reference the same stored test measurement, not independent replications.}
+\label{tab:rag-best-configs-24m}
+\begin{tabular}{@{}rlrrrrrl@{}}
+\toprule
+Seed & Method & Cfg & Rank & Valid F1 & Test F1 & Test EM & Test source \\
+\midrule
+11 & AgentUCT & C17 & 1 & 74.36 & 69.51 & 54.67 & T01 \\
+11 & MCTS-UCT & C17 & 2 & 74.63 & 69.44 & 54.33 & T30 \\
+11 & AgentUCT-NextC & C17 & 3 & 74.36 & 69.51 & 54.67 & T10 \\
+11 & MCTS-Random & C08 & 2 & 75.05 & 69.35 & 55.33 & T20 \\
+23 & AgentUCT & C01 & 1 & 74.09 & 69.52 & 54.33 & T02 \\
+23 & MCTS-UCT & C16 & 1 & 74.01 & 67.32 & 52.00 & T31 \\
+23 & AgentUCT-NextC & C01 & 1 & 74.09 & 69.52 & 54.33 & T11 \\
+23 & MCTS-Random & C14 & 1 & 72.36 & 67.69 & 52.33 & T22 \\
+37 & AgentUCT & C10 & 1 & 71.06 & 69.20 & 54.67 & T04 \\
+37 & MCTS-UCT & C06 & 1 & 73.65 & 68.69 & 54.00 & T33 \\
+37 & AgentUCT-NextC & C10 & 1 & 71.06 & 69.20 & 54.67 & T14 \\
+37 & MCTS-Random & C13 & 1 & 72.04 & 67.68 & 53.00 & T25 \\
+53 & AgentUCT & C15 & 1 & 74.45 & 69.97 & 54.67 & T06 \\
+53 & MCTS-UCT & C02 & 1 & 74.00 & 66.58 & 50.33 & T35 \\
+53 & AgentUCT-NextC & C03 & 4 & 73.07 & 63.21 & 49.00 & T17 \\
+53 & MCTS-Random & C07 & 1 & 73.81 & 69.46 & 54.33 & T27 \\
+71 & AgentUCT & C19 & 3 & 74.60 & 69.63 & 54.67 & T08 \\
+71 & MCTS-UCT & C05 & 1 & 71.70 & 68.01 & 51.67 & T37 \\
+71 & AgentUCT-NextC & C04 & 4 & 71.94 & 67.73 & 54.00 & T19 \\
+71 & MCTS-Random & C05 & 1 & 71.70 & 68.01 & 51.67 & T29 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[p]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\caption{Validation-selected RAG configurations at 32M weighted-token search budget. Rank is the auxiliary position in the saved training Top5; validation chooses the endpoint and breaks ties by that rank. F1 and EM are percentages on the fixed 300-question panels; the test sentinel is excluded. Repeated T codes reference the same stored test measurement, not independent replications.}
+\label{tab:rag-best-configs-32m}
+\begin{tabular}{@{}rlrrrrrl@{}}
+\toprule
+Seed & Method & Cfg & Rank & Valid F1 & Test F1 & Test EM & Test source \\
+\midrule
+11 & AgentUCT & C17 & 1 & 74.36 & 69.51 & 54.67 & T01 \\
+11 & MCTS-UCT & C17 & 2 & 74.63 & 69.44 & 54.33 & T30 \\
+11 & AgentUCT-NextC & C17 & 4 & 74.36 & 69.51 & 54.67 & T10 \\
+11 & MCTS-Random & C08 & 2 & 75.05 & 69.35 & 55.33 & T20 \\
+23 & AgentUCT & C01 & 1 & 74.09 & 69.52 & 54.33 & T02 \\
+23 & MCTS-UCT & C16 & 1 & 74.01 & 67.32 & 52.00 & T31 \\
+23 & AgentUCT-NextC & C01 & 1 & 74.09 & 69.52 & 54.33 & T11 \\
+23 & MCTS-Random & C14 & 1 & 72.36 & 67.69 & 52.33 & T22 \\
+37 & AgentUCT & C10 & 1 & 71.06 & 69.20 & 54.67 & T04 \\
+37 & MCTS-UCT & C06 & 2 & 73.65 & 68.69 & 54.00 & T33 \\
+37 & AgentUCT-NextC & C09 & 2 & 71.50 & 64.89 & 51.00 & T13 \\
+37 & MCTS-Random & C20 & 1 & 72.61 & 69.49 & 55.00 & T24 \\
+53 & AgentUCT & C15 & 1 & 74.45 & 69.97 & 54.67 & T06 \\
+53 & MCTS-UCT & C02 & 1 & 74.00 & 66.58 & 50.33 & T35 \\
+53 & AgentUCT-NextC & C11 & 1 & 72.49 & 69.15 & 53.67 & T16 \\
+53 & MCTS-Random & C07 & 1 & 73.81 & 69.46 & 54.33 & T27 \\
+71 & AgentUCT & C19 & 3 & 74.60 & 69.63 & 54.67 & T08 \\
+71 & MCTS-UCT & C05 & 1 & 71.70 & 68.01 & 51.67 & T37 \\
+71 & AgentUCT-NextC & C05 & 1 & 71.70 & 68.01 & 51.67 & T18 \\
+71 & MCTS-Random & C05 & 1 & 71.70 & 68.01 & 51.67 & T29 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[p]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\caption{Complete saved configurations, dictionary part 1. Codes are defined by component prefix and the exact operator dictionary. Configuration identifiers follow alphabetical workflow order, not quality rank.}
+\label{tab:rag-config-dictionary-1}
+\begin{tabular}{@{}lp{0.80\linewidth}@{}}
+\toprule
+Cfg & Complete ordered component sequence \\
+\midrule
+C01 & \texttt{Q01 R06 S03 K01 C01 RR01 M02 X02 A02} \\
+C02 & \texttt{Q02 R03 S01 K01 C01 RR01 M03 X02 A03} \\
+C03 & \texttt{Q02 R03 S03 K01 C01 RR02 M03 X03 A03} \\
+C04 & \texttt{Q03 R01 S01 K01 C01 RR02 M01 X02 A01} \\
+C05 & \texttt{Q03 R02 S01 K01 C01 RR02 M03 X02 A03} \\
+C06 & \texttt{Q03 R04 S01 K01 C01 RR01 M02 X02 A02} \\
+C07 & \texttt{Q03 R05 S01 K01 C01 RR01 M03 X02 A03} \\
+C08 & \texttt{Q03 R07 S03 K01 C01 RR01 M01 X03 A01} \\
+C09 & \texttt{Q03 R12 S04 K01 C01 RR01 M03 X01 A03} \\
+C10 & \texttt{Q04 R04 S01 K01 C01 RR01 M02 X02 A02} \\
+C11 & \texttt{Q04 R05 S01 K01 C01 RR01 M03 X02 A03} \\
+C12 & \texttt{Q04 R10 S01 K01 C01 RR02 M02 X02 A02} \\
+C13 & \texttt{Q05 R04 S01 K01 C01 RR01 M02 X02 A02} \\
+C14 & \texttt{Q05 R06 S03 K01 C01 RR01 M02 X02 A02} \\
+C15 & \texttt{Q06 R05 S01 K01 C01 RR01 M03 X02 A03} \\
+C16 & \texttt{Q07 R06 S03 K01 C01 RR01 M02 X02 A02} \\
+C17 & \texttt{Q07 R09 S01 K01 C01 RR01 M01 X03 A01} \\
+C18 & \texttt{Q08 R08 S03 K01 C01 RR01 M02 X01 A02} \\
+C19 & \texttt{Q08 R10 S02 K01 C01 RR01 M01 X03 A01} \\
+C20 & \texttt{Q08 R11 S02 K01 C01 RR01 M01 X02 A01} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[p]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\caption{Exact operator definitions, part 1. These are saved workflow actions, not recommendations.}
+\label{tab:rag-operator-dictionary-1}
+\begin{tabular}{@{}lp{0.80\linewidth}@{}}
+\toprule
+Code & Saved action \\
+\midrule
+Q01 & \texttt{query.\allowbreak{}decomposition} \\
+Q02 & \texttt{query.\allowbreak{}hyde} \\
+Q03 & \texttt{query.\allowbreak{}identity} \\
+Q04 & \texttt{query.\allowbreak{}query2doc} \\
+Q05 & \texttt{query.\allowbreak{}query2doc:\allowbreak{}q=\allowbreak{}1} \\
+Q06 & \texttt{query.\allowbreak{}query2doc:\allowbreak{}q=\allowbreak{}3} \\
+Q07 & \texttt{query.\allowbreak{}rewrite} \\
+Q08 & \texttt{query.\allowbreak{}synonyms} \\
+R01 & \texttt{retriever.\allowbreak{}bge\_m3\_hybrid} \\
+R02 & \texttt{retriever.\allowbreak{}bge\_m3\_hybrid:\allowbreak{}dense=\allowbreak{}0.\allowbreak{}25} \\
+R03 & \texttt{retriever.\allowbreak{}hyde\_e5} \\
+R04 & \texttt{retriever.\allowbreak{}rrf} \\
+R05 & \texttt{retriever.\allowbreak{}rrf:\allowbreak{}bm25+\allowbreak{}e5+\allowbreak{}bge+\allowbreak{}qwen:\allowbreak{}k=\allowbreak{}100} \\
+R06 & \texttt{retriever.\allowbreak{}rrf:\allowbreak{}bm25+\allowbreak{}e5+\allowbreak{}bge+\allowbreak{}qwen:\allowbreak{}k=\allowbreak{}60} \\
+R07 & \texttt{retriever.\allowbreak{}rrf:\allowbreak{}bm25+\allowbreak{}e5:\allowbreak{}k=\allowbreak{}10} \\
+R08 & \texttt{retriever.\allowbreak{}rrf:\allowbreak{}bm25+\allowbreak{}qwen:\allowbreak{}k=\allowbreak{}10} \\
+R09 & \texttt{retriever.\allowbreak{}rrf:\allowbreak{}bm25+\allowbreak{}qwen:\allowbreak{}k=\allowbreak{}60} \\
+R10 & \texttt{retriever.\allowbreak{}rrf:\allowbreak{}e5+\allowbreak{}bge:\allowbreak{}k=\allowbreak{}100} \\
+R11 & \texttt{retriever.\allowbreak{}weighted:\allowbreak{}bm25+\allowbreak{}qwen:\allowbreak{}alpha=\allowbreak{}0.\allowbreak{}25} \\
+R12 & \texttt{retriever.\allowbreak{}weighted:\allowbreak{}bm25+\allowbreak{}qwen:\allowbreak{}alpha=\allowbreak{}0.\allowbreak{}5} \\
+S01 & \texttt{selection.\allowbreak{}mmr:\allowbreak{}lambda=\allowbreak{}0.\allowbreak{}3} \\
+S02 & \texttt{selection.\allowbreak{}mmr:\allowbreak{}lambda=\allowbreak{}0.\allowbreak{}6} \\
+S03 & \texttt{selection.\allowbreak{}mmr:\allowbreak{}lambda=\allowbreak{}0.\allowbreak{}9} \\
+S04 & \texttt{selection.\allowbreak{}relevance} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[p]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\caption{Exact operator definitions, part 2. These are saved workflow actions, not recommendations.}
+\label{tab:rag-operator-dictionary-2}
+\begin{tabular}{@{}lp{0.80\linewidth}@{}}
+\toprule
+Code & Saved action \\
+\midrule
+K01 & \texttt{retrieve.\allowbreak{}k=\allowbreak{}10} \\
+C01 & \texttt{control.\allowbreak{}stop} \\
+RR01 & \texttt{reranker.\allowbreak{}identity} \\
+RR02 & \texttt{reranker.\allowbreak{}qwen3} \\
+M01 & \texttt{top\_m=\allowbreak{}2} \\
+M02 & \texttt{top\_m=\allowbreak{}4} \\
+M03 & \texttt{top\_m=\allowbreak{}6} \\
+X01 & \texttt{context.\allowbreak{}ends} \\
+X02 & \texttt{context.\allowbreak{}ranked} \\
+X03 & \texttt{context.\allowbreak{}reverse} \\
+A01 & \texttt{answer.\allowbreak{}generate:\allowbreak{}m=\allowbreak{}2} \\
+A02 & \texttt{answer.\allowbreak{}generate:\allowbreak{}m=\allowbreak{}4} \\
+A03 & \texttt{answer.\allowbreak{}generate:\allowbreak{}m=\allowbreak{}6} \\
+\bottomrule
+\end{tabular}
+\end{table}

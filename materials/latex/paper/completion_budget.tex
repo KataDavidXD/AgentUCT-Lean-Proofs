@@ -1,0 +1,105 @@
+\section{Further Allocation and Budget Comparisons}
+\label{app:finite-budget}
+The cost term prices the next completed reward evaluation. Let
+$U_a=Q_a+c\sqrt{\log(N+1)/N_a}$ and $\gamma=\beta/\cref$ at a fixed decision state.
+Write $b_a$ for the expected completion bill under the declared continuation law.
+Equation~\eqref{eq:completion-threshold} gives the exact exchange condition.
+With equal optimistic quality and $\gamma>0$, the rule chooses a cheapest
+completion. With unequal quality, that condition specifies the saving required to
+offset the quality disadvantage. This is a resource-priced allocation rule;
+$U_a$ retains its tree-exploration meaning and need not be a calibrated
+confidence bound on a stationary arm mean.
+
+
+Proposition~\ref{prop:priced-tradeoff} compares the priced choice $a$ with
+the ordinary-UCT choice $b$ at the same initialized state. If
+$|\widehat b_j-b_j|\le\epsilon_j$ for $j=a,b$, pricing bounds the sacrifice
+in optimistic quality and a predicted saving greater than
+$\epsilon_a+\epsilon_b$ certifies a strict reduction in expected physical cost.
+The statement is local to one common tree and cache state. Realized stochastic
+bills need not follow their expectations on every call.
+
+For a net-value interpretation, let $v_j$ be the actual expected reward of the
+declared completion, and additionally require $|U_j-v_j|\le s_j$.
+Writing $M=(U_a-\gamma\widehat b_a)-(U_b-\gamma\widehat b_b)$ gives
+\begin{equation}
+ (v_a-\gamma b_a)-(v_b-\gamma b_b)
+ \ge M-s_a-s_b-\gamma(\epsilon_a+\epsilon_b).
+ \label{eq:net-certificate}
+\end{equation}
+A positive right side certifies a net-value improvement. The current tree
+bonus and measured prediction MAE do not supply these error bounds. We use
+Equation~\eqref{eq:priced-tradeoff} to audit the implemented rule and reserve
+the physical and net certificates for settings with valid error bounds.
+
+\begin{proposition}[Forecast error and allocation]
+\label{prop:allocation-error}
+Let $a$ maximize $U-\gamma\widehat b$, let $a^*$ maximize $U-\gamma b$ at the
+same state, and suppose $|\widehat b_j-b_j|\le\epsilon_j$ for these two actions.
+For $\gamma\ge0$,
+\begin{equation}
+ (U_{a^*}-\gamma b_{a^*})-(U_a-\gamma b_a)
+ \le\gamma(\epsilon_{a^*}+\epsilon_a).
+ \label{eq:allocation-error}
+\end{equation}
+\end{proposition}
+The inequality follows by inserting the two estimated indices and using
+their ordering. Summing it bounds cumulative loss against the true-index
+choice at each visited state by the corresponding sum of error radii.
+The comparator in this statement uses the same observed state. Comparisons
+between whole search policies must also account for their different histories
+and caches.
+
+Two consequences explain the choice of horizon and cache information. First,
+suppose both candidates have the same next-edge bill $e$, with remaining tails
+$d_a,d_b$. If $0<U_b-U_a<\gamma(d_b-d_a)$, next-edge chooses $b$, while the full
+bill chooses $a$. The absolute truncation error of $e$ is exactly $d_j$.
+Second, scale every cold bill in the two-cache witness of
+Proposition~\ref{prop:graph-separation} by $H>0$. Any allocation that sees only
+the identical prefix totals incurs expected excess cold cost at least $H/2$
+in one of the two states. Incidence-aware allocation has zero excess in both.
+Thus aggregation and horizon truncation can each erase the cost difference
+needed by~\eqref{eq:completion-threshold}.
+
+\begin{proposition}[Coverage under separate cache histories]
+\label{prop:budget-coverage}
+Consider two search policies with their own realized, nonnegative evaluation
+bills. Suppose each of the first $m$ bills of the first policy is at most
+$\ell$, and each of the first $k$ bills of the second is at least $h$.
+If $m\ell\le B<kh$, every prefix of the first $m$ evaluations fits budget $B$,
+whereas the second policy cannot complete its first $k$ evaluations within $B$.
+\end{proposition}
+Summing the respective bounds proves the claim; nonnegativity bounds each
+intermediate prefix cost. Bills include whatever recurring work the declared
+budget charges. This conditional statement gives a directly testable benefit:
+lower realized completion costs can fund additional reward observations.
+It does not order the rewards of those observations. The experiments therefore
+report completed evaluations, cost and final quality together, and keep
+estimator computation time as a separate measured resource.
+
+\paragraph{Different trajectories.}
+Let $A$ and $B$ be the unions of resources materialized by two policies from
+the same initial cache $K$. With fixed prices and successful persistent reuse,
+their cold-cost difference is exactly
+\begin{equation}
+ c_w(K,A)-c_w(K,B)
+ =c_w(K\cup B,A)-c_w(K\cup A,B).
+ \label{eq:exclusive-cost}
+\end{equation}
+Common materializations cancel; the policies pay differently for resources
+exclusive to their own trajectories. Recurring costs add their own difference.
+Repeated local savings therefore do not order whole-run expenditure when the
+policies explore different workflows. They also do not order endpoint quality.
+For example, take current priorities $(U_a,U_b)=(0.6,0.7)$, exact completion
+costs $(1,2)$, and $\gamma=0.5$. UCT chooses $b$ and pricing chooses $a$;
+both fit a budget of two. If their unknown next rewards are $(0,1)$, pricing
+loses both next-reward quality and net value; for $(1,0)$ it wins both. These
+two one-decision cases do not assume calibrated $U$ errors. Lean checks the
+stated inequalities; they are not a constructed full-tree trajectory theorem.
+
+The finite-budget rationale is consequently precise: use the graph to expose
+conditional reuse, estimate the complete reward-producing bill, and trade a
+bounded amount of optimistic quality for predicted savings. Evaluate the
+resulting policies at a common retained-search-cost ceiling, with the full optimization bill reported separately. The logarithmic theorem below
+establishes preservation of long-run quality exploration under persistent cold
+costs; it supplies no universal finite-budget advantage over UCT.

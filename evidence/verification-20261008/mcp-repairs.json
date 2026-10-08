@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-08",
+  "attempts": [
+    {
+      "file": "mcp-first-attempt.json",
+      "outcome": "client compatibility failure after successful diagnostics",
+      "repair": "Use wire isError or Python is_error; MCP SDK 2.0 snake_case model attributes."
+    },
+    {
+      "file": "mcp-second-attempt.json",
+      "outcome": "client validation rejected valid before/after goal response",
+      "repair": "Accept nonempty goals_before and empty goals_after; upstream line-based goal response leaves status null."
+    }
+  ],
+  "upstream_modified": false,
+  "policy": "Original failed receipts retained; final result is recorded separately in mcp-verification.json.",
+  "final_status": "passed",
+  "final_process_exit_code": 0,
+  "windows_shutdown_note": "After protocol checks and server-session cleanup, Python asyncio pipe finalizers emitted ignored ValueError: I/O operation on closed pipe. Actual diagnostics/goal/axiom requests passed; upstream source was not changed."
+}

@@ -1,0 +1,1130 @@
+import importlib
+import io
+import orjson
+from pathlib import Path
+import os
+import subprocess
+
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def reload_search_utils():
+    # Ensure a clean module state for each test once the module exists.
+    import lean_lsp_mcp.search_utils as search_utils
+
+    importlib.reload(search_utils)
+    return search_utils
+
+
+def test_check_ripgrep_status_when_rg_available(monkeypatch, reload_search_utils):
+    search_utils = reload_search_utils
+    monkeypatch.setattr(search_utils.shutil, "which", lambda _: "/usr/bin/rg")
+
+    available, message = search_utils.check_ripgrep_status()
+
+    assert available is True
+    assert message == ""
+
+
+@pytest.mark.parametrize(
+    "platform_name, expected_snippets",
+    [
+        (
+            "Windows",
+            [
+                "winget install BurntSushi.ripgrep.MSVC",
+                "choco install ripgrep",
+            ],
+        ),
+        (
+            "Darwin",
+            [
+                "brew install ripgrep",
+            ],
+        ),
+        (
+            "Linux",
+            [
+                "sudo apt-get install ripgrep",
+                "sudo dnf install ripgrep",
+            ],
+        ),
+        (
+            "FreeBSD",
+            [
+                "Check alternative installation methods.",
+            ],
+        ),
+    ],
+)
+def test_check_ripgrep_status_when_rg_missing_platform_specific(
+    monkeypatch, reload_search_utils, platform_name, expected_snippets
+):
+    search_utils = reload_search_utils
+
+    monkeypatch.setattr(search_utils.shutil, "which", lambda _: None)
+    monkeypatch.setattr(search_utils.platform, "system", lambda: platform_name)
+
+    available, message = search_utils.check_ripgrep_status()
+
+    assert available is False
+    assert "ripgrep (rg) was not found on your PATH" in message
+    assert "https://github.com/BurntSushi/ripgrep#installation" in message
+
+    for snippet in expected_snippets:
+        assert snippet in message
+
+
+def _make_match(path: str, line: str, line_number: int = 1) -> str:
+    return orjson.dumps(
+        {
+            "type": "match",
+            "data": {
+                "path": {"text": path},
+                "lines": {"text": line},
+                "line_number": line_number,
+            },
+        }
+    ).decode("utf-8")
+
+
+class _DummyCompletedProcess:
+    def __init__(self, stdout_lines, returncode=0, stderr_text=""):
+        self.stdout = "".join(f"{line}\n" for line in stdout_lines)
+        self.stderr = stderr_text
+        self.returncode = returncode
+        self.args = []
+
+
+class _DummyPopen:
+    def __init__(self, stdout_lines, returncode=0, stderr_text=""):
+        self.stdout = io.StringIO("".join(f"{line}\n" for line in stdout_lines))
+        self.stderr = io.StringIO(stderr_text)
+        self.returncode = None
+        self._final_code = returncode
+
+    def wait(self, timeout=None):
+        self.returncode = self._final_code
+        return self._final_code
+
+    def terminate(self):
+        self.returncode = self._final_code
+
+    def kill(self):
+        self.returncode = self._final_code
+
+
+def _is_relative_to(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+        return True
+    except ValueError:
+        return False
+
+
+class _FakePathPolicy:
+    def __init__(
+        self,
+        project_root: Path,
+        *,
+        stdlib_root: Path | None = None,
+        extra_roots: list[tuple[Path, str]] | None = None,
+    ) -> None:
+        self.project_root = project_root.resolve(strict=False)
+        self.stdlib_root = (
+            stdlib_root.resolve(strict=False) if stdlib_root is not None else None
+        )
+        self.extra_roots = [
+            (root.resolve(strict=False), prefix) for root, prefix in (extra_roots or [])
+        ]
+
+    def display_path(self, path: Path | str) -> str:
+        candidate = Path(path).resolve(strict=False)
+        if _is_relative_to(candidate, self.project_root):
+            relative = candidate.relative_to(self.project_root)
+            return relative.as_posix() or "."
+        for root, prefix in self.extra_roots:
+            if _is_relative_to(candidate, root):
+                relative = candidate.relative_to(root)
+                suffix = relative.as_posix()
+                return f"{prefix}/{suffix}" if suffix else prefix
+        if self.stdlib_root is not None and _is_relative_to(
+            candidate, self.stdlib_root
+        ):
+            relative = candidate.relative_to(self.stdlib_root)
+            suffix = relative.as_posix()
+            return f".lean-stdlib/{suffix}" if suffix else ".lean-stdlib"
+        raise ValueError(f"{candidate} is outside the test path policy")
+
+
+def _configure_env(
+    monkeypatch,
+    search_utils,
+    stdout_events,
+    returncode=0,
+    expected_cwd=None,
+    *,
+    stdlib_root: Path | None = None,
+    extra_roots: list[tuple[Path, str]] | None = None,
+):
+    def fake_check():
+        return True, ""
+
+    run_calls = []
+    create_calls = []
+    policy_root = Path(expected_cwd) if expected_cwd is not None else Path("/proj")
+    fake_policy = _FakePathPolicy(
+        policy_root,
+        stdlib_root=stdlib_root,
+        extra_roots=extra_roots,
+    )
+
+    def fake_create(cmd, *, cwd):
+        create_calls.append((cmd, cwd))
+        if expected_cwd is not None and cmd and cmd[0] == "rg":
+            assert cwd == expected_cwd
+        return _DummyPopen(stdout_events, returncode=returncode)
+
+    lean_completed = subprocess.CompletedProcess([], 0, stdout="", stderr="")
+
+    def fake_run(cmd, *, capture_output=False, text=False, cwd=None, **kwargs):
+        run_calls.append((cmd, cwd))
+        if cmd[1:] == ["--print-prefix"] and os.path.basename(cmd[0]) == "lean":
+            return lean_completed
+        raise AssertionError(f"Unexpected subprocess.run call: {cmd}")
+
+    monkeypatch.setattr(search_utils, "check_ripgrep_status", fake_check)
+    monkeypatch.setattr(search_utils, "_create_ripgrep_process", fake_create)
+    monkeypatch.setattr(
+        search_utils, "build_lean_path_policy", lambda _root: fake_policy
+    )
+
+    return create_calls, run_calls
+
+
+def test_lean_search_returns_matching_results(monkeypatch, reload_search_utils):
+    search_utils = reload_search_utils
+    project_root = Path("/proj")
+    events = [
+        _make_match("src/Foo/Bar.lean", "def target : Nat := 0"),
+        _make_match("src/Foo/Baz.lean", "lemma target : True := by trivial"),
+    ]
+
+    _configure_env(
+        monkeypatch,
+        search_utils,
+        events,
+        expected_cwd=str(project_root.resolve()),
+    )
+
+    results = search_utils.lean_local_search("target", project_root=project_root)
+
+    assert results == [
+        {
+            "name": "target",
+            "kind": "def",
+            "file": "src/Foo/Bar.lean",
+        },
+        {
+            "name": "target",
+            "kind": "lemma",
+            "file": "src/Foo/Baz.lean",
+        },
+    ]
+
+
+def test_lean_search_exact_match(monkeypatch, reload_search_utils):
+    search_utils = reload_search_utils
+    project_root = Path("/proj")
+    events = [
+        _make_match("src/Foo/Bar.lean", "def sampleValue : Nat := 0"),
+        _make_match("src/Foo/Bar.lean", "def sampleValueExtra : Nat := 0"),
+    ]
+
+    _configure_env(
+        monkeypatch,
+        search_utils,
+        events,
+        expected_cwd=str(project_root.resolve()),
+    )
+
+    results = search_utils.lean_local_search("sampleValue", project_root=project_root)
+
+    assert results == [
+        {
+            "name": "sampleValue",
+            "kind": "def",
+            "file": "src/Foo/Bar.lean",
+        },
+        {
+            "name": "sampleValueExtra",
+            "kind": "def",
+            "file": "src/Foo/Bar.lean",
+        },
+    ]
+
+
+def test_lean_search_prioritizes_exact_and_local_results(
+    monkeypatch, reload_search_utils
+):
+    search_utils = reload_search_utils
+    project_root = Path("/proj")
+    events = [
+        _make_match(
+            ".lake/packages/mathlib/Mathlib/Foo.lean",
+            "def sampleValue : Nat := 0",
+        ),
+        _make_match("src/Foo/Bar.lean", "def sampleValueExtra : Nat := 0"),
+        _make_match("src/Foo/Baz.lean", "def sampleValue : Nat := 1"),
+    ]
+
+    _configure_env(
+        monkeypatch,
+        search_utils,
+        events,
+        expected_cwd=str(project_root.resolve()),
+    )
+
+    results = search_utils.lean_local_search(
+        "sampleValue", limit=3, project_root=project_root
+    )
+
+    assert results == [
+        {
+            "name": "sampleValue",
+            "kind": "def",
+            "file": "src/Foo/Baz.lean",
+        },
+        {
+            "name": "sampleValue",
+            "kind": "def",
+            "file": ".lake/packages/mathlib/Mathlib/Foo.lean",
+        },
+        {
+            "name": "sampleValueExtra",
+            "kind": "def",
+            "file": "src/Foo/Bar.lean",
+        },
+    ]
+
+
+def test_lean_search_respects_limit(monkeypatch, reload_search_utils):
+    search_utils = reload_search_utils
+    project_root = Path("/proj")
+    events = [
+        _make_match("src/Foo/Bar.lean", "def dup : Nat := 0"),
+        _make_match("src/Foo/Baz.lean", "def dup : Nat := 0"),
+        _make_match("src/Foo/Qux.lean", "def dup : Nat := 0"),
+    ]
+
+    _configure_env(
+        monkeypatch,
+        search_utils,
+        events,
+        expected_cwd=str(project_root.resolve()),
+    )
+
+    results = search_utils.lean_local_search("dup", limit=2, project_root=project_root)
+
+    assert len(results) == 2
+
+
+def test_lean_search_oversamples_before_ranking(monkeypatch, reload_search_utils):
+    search_utils = reload_search_utils
+    project_root = Path("/proj")
+    events = [
+        _make_match("src/Foo/A.lean", "def sampleValueExtraA : Nat := 0"),
+        _make_match("src/Foo/B.lean", "def sampleValueExtraB : Nat := 0"),
+        _make_match("src/Foo/C.lean", "def sampleValueExtraC : Nat := 0"),
+        _make_match("src/Foo/D.lean", "def sampleValue : Nat := 0"),
+    ]
+
+    _configure_env(
+        monkeypatch,
+        search_utils,
+        events,
+        expected_cwd=str(project_root.resolve()),
+    )
+
+    results = search_utils.lean_local_search(
+        "sampleValue", limit=1, project_root=project_root
+    )
+
+    assert results == [
+        {
+            "name": "sampleValue",
+            "kind": "def",
+            "file": "src/Foo/D.lean",
+        }
+    ]
+
+
+def test_lean_search_ranks_dotted_queries_by_full_name(
+    monkeypatch, reload_search_utils
+):
+    search_utils = reload_search_utils
+    project_root = Path("/proj")
+    events = [
+        _make_match("src/Foo/A.lean", "def Nat.succX : Nat := 0"),
+        _make_match("src/Foo/B.lean", "def Nat.succ : Nat := 1"),
+        _make_match("src/Foo/C.lean", "def Prelude.Nat.succExtra : Nat := 2"),
+    ]
+
+    _configure_env(
+        monkeypatch,
+        search_utils,
+        events,
+        expected_cwd=str(project_root.resolve()),
+    )
+
+    results = search_utils.lean_local_search(
+        "Nat.succ", limit=3, project_root=project_root
+    )
+
+    assert results[0] == {
+        "name": "Nat.succ",
+        "kind": "def",
+        "file": "src/Foo/B.lean",
+    }
+
+
+def test_lean_search_deduplicates_identical_results(monkeypatch, reload_search_utils):
+    search_utils = reload_search_utils
+    project_root = Path("/proj")
+    events = [
+        _make_match("src/Foo/Bar.lean", "def dupName : Nat := 0"),
+        _make_match("src/Foo/Bar.lean", "def dupName : Nat := 0"),
+        _make_match("src/Foo/Baz.lean", "def dupNameExtra : Nat := 0"),
+    ]
+
+    _configure_env(
+        monkeypatch,
+        search_utils,
+        events,
+        expected_cwd=str(project_root.resolve()),
+    )
+
+    results = search_utils.lean_local_search("dupName", project_root=project_root)
+
+    assert results == [
+        {
+            "name": "dupName",
+            "kind": "def",
+            "file": "src/Foo/Bar.lean",
+        },
+        {
+            "name": "dupNameExtra",
+            "kind": "def",
+            "file": "src/Foo/Baz.lean",
+        },
+    ]
+
+
+def test_lean_search_wait_timeout_only_on_early_termination(
+    monkeypatch, reload_search_utils
+):
+    search_utils = reload_search_utils
+    project_root = Path("/proj")
+    events = [
+        _make_match(f"src/Foo/{idx}.lean", f"def my{idx} : Nat := {idx}")
+        for idx in range(10)
+    ]
+
+    waits: list[float | None] = []
+    terminate_calls: list[None] = []
+
+    class _RecordingPopen(_DummyPopen):
+        def wait(self, timeout=None):
+            waits.append(timeout)
+            return super().wait(timeout=timeout)
+
+        def terminate(self):
+            terminate_calls.append(None)
+            return super().terminate()
+
+    monkeypatch.setattr(
+        search_utils,
+        "_create_ripgrep_process",
+        lambda cmd, *, cwd: _RecordingPopen(events),
+    )
+    monkeypatch.setattr(
+        search_utils,
+        "build_lean_path_policy",
+        lambda _root: _FakePathPolicy(project_root),
+    )
+
+    search_utils.lean_local_search("my", limit=10, project_root=project_root)
+    assert waits == [None]
+
+    waits.clear()
+    search_utils.lean_local_search("my", limit=1, project_root=project_root)
+    assert terminate_calls
+    assert waits == [5]
+
+
+def test_lean_search_reaps_process_on_parse_error(monkeypatch, reload_search_utils):
+    search_utils = reload_search_utils
+    project_root = Path("/proj")
+    events = [_make_match("src/Foo/Bar.lean", "def ok : Nat := 0")]
+
+    calls: dict[str, int] = {"terminate": 0, "kill": 0, "wait": 0}
+
+    class _RecordingPopen(_DummyPopen):
+        def wait(self, timeout=None):
+            calls["wait"] += 1
+            return super().wait(timeout=timeout)
+
+        def terminate(self):
+            calls["terminate"] += 1
+            return super().terminate()
+
+        def kill(self):
+            calls["kill"] += 1
+            return super().kill()
+
+    monkeypatch.setattr(
+        search_utils,
+        "_create_ripgrep_process",
+        lambda cmd, *, cwd: _RecordingPopen(events),
+    )
+    monkeypatch.setattr(
+        search_utils,
+        "build_lean_path_policy",
+        lambda _root: _FakePathPolicy(project_root),
+    )
+
+    def _raise_on_load(_: str):
+        raise ValueError("bad json")
+
+    monkeypatch.setattr(search_utils, "_json_loads", _raise_on_load)
+
+    with pytest.raises(ValueError):
+        search_utils.lean_local_search("ok", project_root=project_root)
+
+    assert calls["wait"] >= 1
+    assert calls["terminate"] + calls["kill"] >= 1
+
+
+def test_lean_search_returns_relative_paths(monkeypatch, reload_search_utils):
+    search_utils = reload_search_utils
+    project_root = Path("/proj")
+    events = [
+        _make_match(
+            ".lake/packages/mathlib/Mathlib/Algebra/Group.lean",
+            "theorem sampleGroupTheorem : True := by trivial",
+        )
+    ]
+
+    _configure_env(
+        monkeypatch,
+        search_utils,
+        events,
+        expected_cwd=str(project_root.resolve()),
+    )
+
+    results = search_utils.lean_local_search(
+        "sampleGroupTheorem", project_root=project_root
+    )
+
+    assert results == [
+        {
+            "name": "sampleGroupTheorem",
+            "kind": "theorem",
+            "file": ".lake/packages/mathlib/Mathlib/Algebra/Group.lean",
+        }
+    ]
+
+
+def test_lean_search_sanitizes_stdlib_paths(monkeypatch, reload_search_utils):
+    search_utils = reload_search_utils
+    project_root = Path("/proj")
+    stdlib_root = Path("/lean-prefix/src")
+    events = [
+        _make_match(
+            str(stdlib_root / "Init" / "Prelude.lean"),
+            "def stdlibThing : Nat := 0",
+        )
+    ]
+
+    _configure_env(
+        monkeypatch,
+        search_utils,
+        events,
+        expected_cwd=str(project_root.resolve()),
+        stdlib_root=stdlib_root,
+    )
+
+    results = search_utils.lean_local_search("stdlibThing", project_root=project_root)
+
+    assert results == [
+        {
+            "name": "stdlibThing",
+            "kind": "def",
+            "file": ".lean-stdlib/Init/Prelude.lean",
+        }
+    ]
+
+
+def test_lean_search_handles_ripgrep_errors(monkeypatch, reload_search_utils):
+    search_utils = reload_search_utils
+    project_root = Path("/proj")
+    _configure_env(
+        monkeypatch,
+        search_utils,
+        [],
+        returncode=2,
+        expected_cwd=str(project_root.resolve()),
+    )
+
+    # With exit code 2 and no results, should raise RuntimeError
+    with pytest.raises(RuntimeError):
+        search_utils.lean_local_search("sample", project_root=project_root)
+
+
+def test_lean_search_handles_ripgrep_errors_with_partial_results(
+    monkeypatch, reload_search_utils
+):
+    """Test that partial results are returned even when ripgrep exits with error code 2."""
+    search_utils = reload_search_utils
+    project_root = Path("/proj")
+    events = [
+        _make_match("src/Test.lean", "def partialResult : Nat := 0"),
+    ]
+    _configure_env(
+        monkeypatch,
+        search_utils,
+        events,
+        returncode=2,  # Error after getting some results
+        expected_cwd=str(project_root.resolve()),
+    )
+
+    # Should return partial results instead of raising
+    results = search_utils.lean_local_search(
+        "partial", project_root=project_root, limit=10
+    )
+    assert len(results) == 1
+    assert results[0]["name"] == "partialResult"
+
+
+def test_lean_search_returns_empty_for_no_matches(monkeypatch, reload_search_utils):
+    search_utils = reload_search_utils
+    project_root = Path("/proj")
+
+    _configure_env(
+        monkeypatch,
+        search_utils,
+        [],
+        expected_cwd=str(project_root.resolve()),
+    )
+
+    assert search_utils.lean_local_search("nothing", project_root=project_root) == []
+
+
+class TestResolveNamespaces:
+    """Tests for _resolve_namespaces used to qualify declaration names."""
+
+    @pytest.mark.parametrize(
+        "content, line_numbers, expected",
+        [
+            # simple namespace
+            ("namespace Foo\ntheorem bar : True := trivial\nend Foo", {2}, {2: "Foo"}),
+            # nested namespace
+            (
+                "namespace Foo\nnamespace Bar\ndef baz : Nat := 0\nend Bar\nend Foo",
+                {3},
+                {3: "Foo.Bar"},
+            ),
+            # dotted namespace
+            ("namespace Foo.Bar\ndef baz : Nat := 0\nend Foo.Bar", {2}, {2: "Foo.Bar"}),
+            # no namespace
+            ("def top : Nat := 0", {1}, {1: ""}),
+            # section does not contribute to FQN
+            (
+                "namespace Foo\nsection Helper\ndef bar : Nat := 0\nend Helper\nend Foo",
+                {3},
+                {3: "Foo"},
+            ),
+            # after namespace closed
+            (
+                "namespace Foo\ndef bar : Nat := 0\nend Foo\ndef top : Nat := 1",
+                {2, 4},
+                {2: "Foo", 4: ""},
+            ),
+            # mutual block does not contribute to FQN
+            (
+                "namespace Foo\nmutual\ndef bar : Nat := 0\nend\nend Foo",
+                {3},
+                {3: "Foo"},
+            ),
+            # namespace reopened after close
+            (
+                "namespace A\nend A\nnamespace A\ndef x : Nat := 0\nend A",
+                {4},
+                {4: "A"},
+            ),
+            # commented-out namespace ignored
+            (
+                "-- namespace Fake\ndef top : Nat := 0",
+                {2},
+                {2: ""},
+            ),
+        ],
+    )
+    def test_resolve_namespaces(
+        self, tmp_path, reload_search_utils, content, line_numbers, expected
+    ):
+        f = tmp_path / "Test.lean"
+        f.write_text(content)
+        assert reload_search_utils._resolve_namespaces(f, line_numbers) == expected
+
+    def test_nonexistent_file(self, tmp_path, reload_search_utils):
+        f = tmp_path / "Missing.lean"
+        assert reload_search_utils._resolve_namespaces(f, {1}) == {}
+
+    def test_empty_line_numbers(self, tmp_path, reload_search_utils):
+        f = tmp_path / "Test.lean"
+        f.write_text("namespace Foo\ndef bar : Nat := 0\nend Foo")
+        assert reload_search_utils._resolve_namespaces(f, set()) == {}
+
+
+class TestLocalSearchNamespaceQualification:
+    """Test that lean_local_search returns fully-qualified names."""
+
+    def test_qualifies_names_from_namespace(
+        self, tmp_path, monkeypatch, reload_search_utils
+    ):
+        search_utils = reload_search_utils
+        project_root = tmp_path / "proj"
+        project_root.mkdir()
+        src = project_root / "Test.lean"
+        src.write_text("namespace MyNS\ntheorem myThm : True := trivial\nend MyNS\n")
+
+        events = [
+            _make_match(str(src), "theorem myThm : True := trivial", line_number=2),
+        ]
+        _configure_env(
+            monkeypatch,
+            search_utils,
+            events,
+            expected_cwd=str(project_root.resolve()),
+        )
+
+        results = search_utils.lean_local_search("myThm", project_root=project_root)
+
+        assert results[0]["name"] == "MyNS.myThm"
+
+    def test_top_level_stays_unqualified(
+        self, tmp_path, monkeypatch, reload_search_utils
+    ):
+        search_utils = reload_search_utils
+        project_root = tmp_path / "proj"
+        project_root.mkdir()
+        src = project_root / "Test.lean"
+        src.write_text("def topDef : Nat := 0\n")
+
+        events = [
+            _make_match(str(src), "def topDef : Nat := 0", line_number=1),
+        ]
+        _configure_env(
+            monkeypatch,
+            search_utils,
+            events,
+            expected_cwd=str(project_root.resolve()),
+        )
+
+        results = search_utils.lean_local_search("topDef", project_root=project_root)
+
+        assert results[0]["name"] == "topDef"
+
+
+TEST_PROJECT_ROOT = Path(__file__).resolve().parents[1] / "test_project"
+MATHLIB_DIR = TEST_PROJECT_ROOT / ".lake" / "packages" / "mathlib"
+
+
+def test_lean_search_integration_project_root(reload_search_utils):
+    search_utils = reload_search_utils
+    available, message = search_utils.check_ripgrep_status()
+    if not available:
+        pytest.skip(message)
+
+    results = search_utils.lean_local_search(
+        "sampleTheorem", project_root=TEST_PROJECT_ROOT
+    )
+
+    assert results == [
+        {
+            "name": "sampleTheorem",
+            "kind": "theorem",
+            "file": "EditorTools.lean",
+        }
+    ]
+
+
+@pytest.mark.skipif(not MATHLIB_DIR.is_dir(), reason="mathlib not downloaded")
+def test_lean_search_integration_mathlib(reload_search_utils):
+    search_utils = reload_search_utils
+    available, message = search_utils.check_ripgrep_status()
+    if not available:
+        pytest.skip(message)
+
+    results = search_utils.lean_local_search(
+        "map_mul_right",
+        limit=50,
+        project_root=TEST_PROJECT_ROOT,
+    )
+
+    assert results
+    assert any(
+        item["file"]
+        == ".lake/packages/mathlib/Mathlib/GroupTheory/MonoidLocalization/Maps.lean"
+        and item["name"].endswith("map_mul_right")
+        for item in results
+    )
+
+
+@pytest.mark.skipif(not MATHLIB_DIR.is_dir(), reason="mathlib not downloaded")
+def test_lean_search_integration_mathlib_prefix_results(reload_search_utils):
+    search_utils = reload_search_utils
+    available, message = search_utils.check_ripgrep_status()
+    if not available:
+        pytest.skip(message)
+
+    results = search_utils.lean_local_search(
+        "add_comm",
+        limit=50,
+        project_root=TEST_PROJECT_ROOT,
+    )
+
+    assert len(results) >= 2
+    assert any(
+        item["file"] == ".lake/packages/mathlib/MathlibTest/Find.lean"
+        and item["name"].endswith("add_comm_zero")
+        for item in results
+    )
+
+
+def test_lean_search_integration_mathlib_prefix_limit(reload_search_utils):
+    search_utils = reload_search_utils
+    available, message = search_utils.check_ripgrep_status()
+    if not available:
+        pytest.skip(message)
+
+    results = search_utils.lean_local_search(
+        "add_comm",
+        limit=1,
+        project_root=TEST_PROJECT_ROOT,
+    )
+
+    assert len(results) == 1
+    assert results[0]["name"].split(".")[-1].startswith("add_comm")
+    # The declaration keyword must be parsed as the `kind`, never a leading
+    # attribute/modifier such as `protected` (which the naive split produced,
+    # yielding name="theorem" and flaky results depending on ripgrep order).
+    assert results[0]["kind"] in search_utils._DECL_KEYWORDS
+
+
+def test_lean_search_integration_stdlib_definitions(reload_search_utils):
+    search_utils = reload_search_utils
+    available, message = search_utils.check_ripgrep_status()
+    if not available:
+        pytest.skip(message)
+    if search_utils._get_lean_src_search_path(TEST_PROJECT_ROOT) is None:
+        pytest.skip("Lean stdlib source path unavailable on this machine")
+
+    results = search_utils.lean_local_search(
+        "Nat.succ",
+        limit=20,
+        project_root=TEST_PROJECT_ROOT,
+    )
+
+    if not results:
+        pytest.skip("Nat.succ stdlib search returned no results on this machine")
+    assert any(item["name"].startswith("Nat.succ") for item in results)
+
+
+def test_lean_search_all_declaration_types(monkeypatch, reload_search_utils):
+    """Test all supported declaration types are correctly parsed."""
+    search_utils = reload_search_utils
+    project_root = Path("/proj")
+    events = [
+        _make_match("Test.lean", "theorem myTheorem : True := by trivial"),
+        _make_match("Test.lean", "lemma myLemma : True := by trivial"),
+        _make_match("Test.lean", "def myDef : Nat := 42"),
+        _make_match("Test.lean", "axiom myAxiom : Prop"),
+        _make_match("Test.lean", "class MyClass (α : Type) where"),
+        _make_match("Test.lean", "instance myInstance : MyClass Nat where"),
+        _make_match("Test.lean", "structure MyStruct where"),
+        _make_match("Test.lean", "inductive MyInductive where"),
+        _make_match("Test.lean", "abbrev MyAbbrev := Nat"),
+        _make_match("Test.lean", "opaque myOpaque : Nat"),
+    ]
+
+    _configure_env(
+        monkeypatch, search_utils, events, expected_cwd=str(project_root.resolve())
+    )
+    results = search_utils.lean_local_search("my", project_root=project_root)
+
+    assert len(results) == 10
+    assert {r["kind"] for r in results} == {
+        "theorem",
+        "lemma",
+        "def",
+        "axiom",
+        "class",
+        "instance",
+        "structure",
+        "inductive",
+        "abbrev",
+        "opaque",
+    }
+
+
+def test_lean_search_strips_colon_from_names(monkeypatch, reload_search_utils):
+    """Test that declaration names with colons are correctly stripped."""
+    search_utils = reload_search_utils
+    project_root = Path("/proj")
+    events = [
+        _make_match("Test.lean", "def myFunc: Nat := 42"),
+        _make_match("Test.lean", "theorem myThm : True := by trivial"),
+    ]
+
+    _configure_env(
+        monkeypatch, search_utils, events, expected_cwd=str(project_root.resolve())
+    )
+    results = search_utils.lean_local_search("my", project_root=project_root)
+
+    assert len(results) == 2
+    assert {result["name"] for result in results} == {"myFunc", "myThm"}
+    assert all(":" not in result["name"] for result in results)
+
+
+def test_lean_search_uses_cwd_when_project_root_none(monkeypatch, reload_search_utils):
+    """Test that Path.cwd() is used when project_root is None."""
+    search_utils = reload_search_utils
+    fake_cwd = Path("/fake/working/dir")
+    monkeypatch.setattr(Path, "cwd", lambda: fake_cwd)
+
+    events = [_make_match("Test.lean", "def testDef : Nat := 0")]
+    _configure_env(
+        monkeypatch, search_utils, events, expected_cwd=str(fake_cwd.resolve())
+    )
+
+    results = search_utils.lean_local_search("testDef", project_root=None)
+
+    assert len(results) == 1
+    assert results[0]["name"] == "testDef"
+
+
+def test_lean_search_resolves_project_root_to_absolute(
+    monkeypatch, reload_search_utils
+):
+    """Test that project_root is resolved to an absolute path."""
+    search_utils = reload_search_utils
+    absolute_root = Path("/absolute/path/to/project")
+    events = [_make_match("Test.lean", "def testFunc : Nat := 0")]
+
+    _configure_env(
+        monkeypatch, search_utils, events, expected_cwd=str(absolute_root.resolve())
+    )
+    results = search_utils.lean_local_search("testFunc", project_root=absolute_root)
+
+    assert len(results) == 1
+    assert results[0]["name"] == "testFunc"
+
+
+def test_lean_search_uses_project_root_not_cwd(monkeypatch, reload_search_utils):
+    """Test that project_root is used instead of cwd when both differ."""
+    search_utils = reload_search_utils
+    current_dir = Path("/home/user/workspace")
+    project_root = Path("/different/project")
+
+    monkeypatch.setattr(Path, "cwd", lambda: current_dir)
+    events = [_make_match("MyModule.lean", "def myDef : Nat := 42")]
+
+    _configure_env(
+        monkeypatch, search_utils, events, expected_cwd=str(project_root.resolve())
+    )
+    results = search_utils.lean_local_search("myDef", project_root=project_root)
+
+    assert len(results) == 1
+    assert results[0]["file"] == "MyModule.lean"
+
+
+def test_lean_search_handles_namespaces(monkeypatch, reload_search_utils):
+    """Test that searching without namespace prefix finds namespaced declarations."""
+    search_utils = reload_search_utils
+    project_root = Path("/proj")
+    events = [
+        _make_match("Nat.lean", "def Nat.add (a b : Nat) : Nat := a + b"),
+        _make_match("List.lean", "def List.add (xs ys : List α) : List α := xs ++ ys"),
+        _make_match("Basic.lean", "def add (x y : Int) : Int := x + y"),
+    ]
+
+    _configure_env(
+        monkeypatch, search_utils, events, expected_cwd=str(project_root.resolve())
+    )
+    results = search_utils.lean_local_search("add", project_root=project_root)
+
+    assert len(results) == 3
+    names = {r["name"] for r in results}
+    assert names == {"Nat.add", "List.add", "add"}
+
+
+def _index_policy(project_root: Path):
+    """A path policy shaped like a real project, without needing a Lean install."""
+    from lean_lsp_mcp.file_utils import AllowedPathRoot, LeanPathPolicy
+
+    mathlib_root = project_root / ".lake" / "packages" / "mathlib"
+    mathlib_root.mkdir(parents=True, exist_ok=True)
+    return LeanPathPolicy(
+        project_root=project_root,
+        allowed_roots=(
+            AllowedPathRoot(project_root, ""),
+            AllowedPathRoot(mathlib_root, ".lake/packages/mathlib"),
+        ),
+    )
+
+
+class TestWorkspaceSymbolMatches:
+    @pytest.mark.parametrize("symbol_path", ["relative", "absolute"])
+    def test_converts_symbols_to_repo_relative_matches(
+        self, symbol_path, tmp_path, reload_search_utils
+    ):
+        search_utils = reload_search_utils
+        declaration = tmp_path / ".lake" / "packages" / "mathlib" / "Mathlib" / "G.lean"
+        declaration.parent.mkdir(parents=True, exist_ok=True)
+        declaration.touch()
+
+        matches = search_utils.workspace_symbol_matches(
+            [
+                {
+                    "name": "add_neg_cancel_left",
+                    "location": {
+                        "path": (
+                            str(declaration.relative_to(tmp_path))
+                            if symbol_path == "relative"
+                            else str(declaration)
+                        )
+                    },
+                }
+            ],
+            _index_policy(tmp_path),
+        )
+
+        assert matches == [
+            {
+                "name": "add_neg_cancel_left",
+                "kind": search_utils.INDEX_MATCH_KIND,
+                "file": ".lake/packages/mathlib/Mathlib/G.lean",
+            }
+        ]
+
+    def test_skips_symbols_outside_the_project(self, tmp_path, reload_search_utils):
+        search_utils = reload_search_utils
+        outside = tmp_path.parent / "outside_project" / "Other.lean"
+        outside.parent.mkdir(parents=True, exist_ok=True)
+        outside.touch()
+
+        matches = search_utils.workspace_symbol_matches(
+            [{"name": "outside_decl", "location": {"path": str(outside)}}],
+            _index_policy(tmp_path),
+        )
+
+        assert matches == []
+
+    @pytest.mark.parametrize(
+        "symbol",
+        [
+            {"location": {"path": "/a.lean"}},
+            {"name": "", "location": {"path": "/a.lean"}},
+            {"name": "no_location"},
+            {"name": "location_not_a_mapping", "location": "nope"},
+            {"name": "no_path", "location": {}},
+        ],
+    )
+    def test_skips_malformed_symbols(self, symbol, tmp_path, reload_search_utils):
+        search_utils = reload_search_utils
+
+        matches = search_utils.workspace_symbol_matches(
+            [symbol], _index_policy(tmp_path)
+        )
+
+        assert matches == []
+
+
+class TestMergeLocalSearchMatches:
+    def test_exact_index_match_outranks_source_near_miss(self, reload_search_utils):
+        """The reported failure: `Finset.sum_range_succ` is generated by
+        `@[to_additive]`, so source search only turns up a longer name that
+        happens to contain the query."""
+        search_utils = reload_search_utils
+        source = [
+            {
+                "name": "Finset.sum_range_succ_mul_sum_range_succ",
+                "kind": "lemma",
+                "file": ".lake/packages/mathlib/Mathlib/Algebra/Ring.lean",
+            }
+        ]
+        index = [
+            {
+                "name": "Finset.sum_range_succ",
+                "kind": search_utils.INDEX_MATCH_KIND,
+                "file": ".lake/packages/mathlib/Mathlib/Algebra/Basic.lean",
+            }
+        ]
+
+        merged = search_utils.merge_local_search_matches(
+            source, index, "sum_range_succ", limit=10
+        )
+
+        assert [match["name"] for match in merged] == [
+            "Finset.sum_range_succ",
+            "Finset.sum_range_succ_mul_sum_range_succ",
+        ]
+
+    def test_source_entry_wins_for_the_same_declaration(self, reload_search_utils):
+        """The source match carries the real declaration keyword, so it is kept."""
+        search_utils = reload_search_utils
+        source = [
+            {"name": "Finset.prod_range_succ", "kind": "theorem", "file": "A.lean"}
+        ]
+        index = [
+            {
+                "name": "Finset.prod_range_succ",
+                "kind": search_utils.INDEX_MATCH_KIND,
+                "file": "B.lean",
+            }
+        ]
+
+        merged = search_utils.merge_local_search_matches(
+            source, index, "prod_range_succ", limit=10
+        )
+
+        assert merged == source
+
+    def test_empty_index_leaves_source_results_untouched(self, reload_search_utils):
+        search_utils = reload_search_utils
+        source = [
+            {"name": "Nat.add", "kind": "theorem", "file": "A.lean"},
+            {"name": "Nat.add_comm", "kind": "theorem", "file": "A.lean"},
+        ]
+
+        merged = search_utils.merge_local_search_matches(source, [], "add", limit=10)
+
+        assert merged == source
+
+    def test_respects_the_limit(self, reload_search_utils):
+        search_utils = reload_search_utils
+        index = [
+            {
+                "name": f"Ns.decl_{i}",
+                "kind": search_utils.INDEX_MATCH_KIND,
+                "file": "A.lean",
+            }
+            for i in range(10)
+        ]
+
+        merged = search_utils.merge_local_search_matches([], index, "decl", limit=3)
+
+        assert len(merged) == 3

@@ -1,0 +1,23 @@
+name = "agentuct_theory"
+version = "0.1.0"
+defaultTargets = ["AgentUCT", "AgentUCTPaper", "AgentUCTProofGuide", "AgentUCTCompleteProofsEN", "AgentUCTProofGuideEN"]
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4.git"
+rev = "v4.24.0"
+
+[[lean_lib]]
+name = "AgentUCT"
+
+[[lean_lib]]
+name = "AgentUCTPaper"
+
+[[lean_lib]]
+name = "AgentUCTProofGuide"
+
+[[lean_lib]]
+name = "AgentUCTCompleteProofsEN"
+
+[[lean_lib]]
+name = "AgentUCTProofGuideEN"

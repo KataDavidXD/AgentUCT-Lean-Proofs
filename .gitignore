@@ -1,0 +1,12 @@
+**/.lake/
+**/.venv/
+**/__pycache__/
+**/.idea/
+*.pyc
+tmp/
+materials/latex/build/
+materials/latex/*.aux
+materials/latex/*.log
+materials/latex/*.out
+materials/latex/*.bbl
+materials/latex/*.blg

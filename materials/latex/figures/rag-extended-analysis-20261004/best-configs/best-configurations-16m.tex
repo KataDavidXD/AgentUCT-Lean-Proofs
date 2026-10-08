@@ -1,0 +1,33 @@
+\begin{table}[p]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\caption{Validation-selected RAG configurations at 16M weighted-token search budget. Rank is the auxiliary position in the saved training Top5; validation chooses the endpoint and breaks ties by that rank. F1 and EM are percentages on the fixed 300-question panels; the test sentinel is excluded. Repeated T codes reference the same stored test measurement, not independent replications.}
+\label{tab:rag-best-configs-16m}
+\begin{tabular}{@{}rlrrrrrl@{}}
+\toprule
+Seed & Method & Cfg & Rank & Valid F1 & Test F1 & Test EM & Test source \\
+\midrule
+11 & AgentUCT & C17 & 1 & 74.36 & 69.51 & 54.67 & T01 \\
+11 & MCTS-UCT & C17 & 1 & 74.63 & 69.44 & 54.33 & T30 \\
+11 & AgentUCT-NextC & C17 & 1 & 74.36 & 69.51 & 54.67 & T10 \\
+11 & MCTS-Random & C17 & 1 & 74.36 & 69.51 & 54.67 & T21 \\
+23 & AgentUCT & C18 & 1 & 71.54 & 67.05 & 52.33 & T03 \\
+23 & MCTS-UCT & C18 & 1 & 71.54 & 67.05 & 52.33 & T32 \\
+23 & AgentUCT-NextC & C18 & 1 & 71.54 & 67.05 & 52.33 & T12 \\
+23 & MCTS-Random & C18 & 1 & 71.54 & 67.05 & 52.33 & T23 \\
+37 & AgentUCT & C12 & 1 & 70.46 & 69.20 & 54.00 & T05 \\
+37 & MCTS-UCT & C12 & 1 & 70.46 & 69.20 & 54.00 & T34 \\
+37 & AgentUCT-NextC & C12 & 1 & 70.46 & 69.20 & 54.00 & T15 \\
+37 & MCTS-Random & C12 & 1 & 70.46 & 69.20 & 54.00 & T26 \\
+53 & AgentUCT & C03 & 3 & 73.07 & 63.21 & 49.00 & T07 \\
+53 & MCTS-UCT & C03 & 3 & 73.07 & 63.21 & 49.00 & T36 \\
+53 & AgentUCT-NextC & C03 & 3 & 73.07 & 63.21 & 49.00 & T17 \\
+53 & MCTS-Random & C03 & 3 & 73.07 & 63.21 & 49.00 & T28 \\
+71 & AgentUCT & C05 & 1 & 71.70 & 68.01 & 51.67 & T09 \\
+71 & MCTS-UCT & C05 & 1 & 71.70 & 68.01 & 51.67 & T37 \\
+71 & AgentUCT-NextC & C05 & 1 & 71.70 & 68.01 & 51.67 & T18 \\
+71 & MCTS-Random & C05 & 1 & 71.70 & 68.01 & 51.67 & T29 \\
+\bottomrule
+\end{tabular}
+\end{table}

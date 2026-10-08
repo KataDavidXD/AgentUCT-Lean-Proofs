@@ -1,0 +1,1598 @@
+\section{Experimental Protocol and Component Catalogue}
+\label{app:experiments}
+The completed RAG studies optimize component workflows. AFlow--RAG generates
+and charges legal edits within the same grammar. The separate GSM8K study
+optimizes generated Python workflows; earlier fixed-library and bounded
+generated-workflow pilots remain diagnostic and are excluded from its formal cohort.
+Every generative execution role uses the same Qwen3.5-4B checkpoint: query refinement,
+progress assessment, listwise reranking, answer generation, workflow review
+and repair. The dynamic AFlow study generates and charges Python-workflow edits.
+Dedicated embedding models remain retrieval components. All inference runs on
+the experiment server. Up to seven GPUs run Qwen workers; the eighth hosts the shared E5, BGE and Qwen
+embedding service. Each trial owns its document indices and online caches;
+sharing model residency creates no cross-trial reuse credit. Direct small-model component selection is
+outside this study.
+The deferred planning references specify DeepSeek-V4-Pro and GPT-5.5 as
+offline planners, with proposed workflows executed by Qwen3.5-4B. These
+references currently have no completed measurements; their protocol separates
+planner and execution charges.
+
+The paired RAG evaluator fixes bfloat16 inference, greedy generation in fixed
+query groups with model batches capped at four, encoder batches capped at eight for both index construction and
+query encoding, model context limits and deterministic ranking tie rules.
+Document indices are built under this common configuration before search.
+Changing these evaluator settings defines a separate experimental cohort.
+The completed batch cohort started all four methods and five seeds afresh; earlier
+single-request search trees and generated responses are not imported.
+
+\subsection{Conceptual comparison with related optimizers}
+Table~\ref{tab:related} summarizes the design models discussed in Related Work.
+The completed five-seed RAG comparisons contain AgentUCT, MCTS-UCT,
+AgentUCT-NextC, AgentUCT-StaticFull, MCTS-Random, adapted AFlow,
+uniform-terminal search, FLASH*--RAG (TPE), EEIPU--RAG, LaMBO--RAG and
+MSBO--RAG. The separate formal GSM8K study
+compares AFlow, MCTS-UCT and AgentUCT within the same dynamic execution system;
+its earlier pilot supplies execution evidence only.
+\begin{table*}[t]
+\centering\small
+\caption{Conceptual comparison of cost and execution-state models, not an
+empirical benchmark. Rows describe the cited methods' allocation mechanisms
+and analysis targets; Related Work supplies their references.}
+\label{tab:related}
+\begin{tabularx}{\textwidth}{@{}l XXX@{}}
+\toprule
+Method & Cost and reusable state & Allocation statistic & Analysis target\\
+\midrule
+FLASH & Pipeline-prefix intermediates; LRU eviction & Cost-sensitive BO acquisition & Efficient pipeline optimization\\
+EEIPU & Selected memoized prefixes; stage-cost GPs & EI and inverse remaining cost & Budgeted BO with memoization\\
+LaMBO & Modular change from the preceding configuration & Slowly moving bandit and local BO & Switching-cost-regularized regret\\
+MSBO & Inventory of partial cascades and observations & Stage models; start or advance a sample & Multistage evaluation efficiency\\
+AFlow & Generated program and execution feedback & Parent score/uniform mixture & Workflow optimization\\
+AgentUCT & Persistent qid--prefix demands shared by panels & Raw ancestor returns and completion-cost price & Demand-information boundary; same-state tradeoff; fixed-table quality regret\\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\subsection{Direct AFlow comparison in the common RAG space}
+The AFlow adapter proposes edits within the same 61,344-workflow grammar,
+using Qwen3.5-4B and completed training feedback. Its parent selection retains
+the score/uniform mixture. Proposal and repair calls enter the actual search
+bill, and every accepted workflow completes the full 150-question panel
+before it can supply feedback for another proposal. All methods use the same
+three actual-cost cutoffs and Top5--validation--test selection. This comparison
+tests allocation within a common component space; the generated Python-workflow
+experiment on GSM8K tests transfer within the AFlow execution system.
+
+AgentUCT exceeds the adapted AFlow policy at 24M and 32M in all five paired
+seeds (Table~\ref{tab:completed-aflow-paired}). At 32M, the differences are
+1.24, 3.71, 3.25, 3.22 and 0.18 percentage points for seeds
+11, 23, 37, 53 and 71, respectively, with mean $2.32\pm1.53$ points.
+AFlow's five-seed mean F1 is $65.93\pm1.91\%$, $66.38\pm1.24\%$
+and $67.25\pm1.57\%$ at 16M, 24M and 32M.
+For seeds 11 and 23, AFlow retains 19 and 21 complete evaluations, respectively,
+compared with AgentUCT's 18 and 19: the quality advantage in these runs does
+not require more completed evaluations. At 16M, AFlow leads by 2.61 points
+in seed 53, where the cutoff primarily covers common initialization for
+AgentUCT and MCTS-UCT. At 16M, AgentUCT leads in three seeds and AFlow
+in two; the result does not support superiority at every budget.
+
+\begin{table*}[t]
+\centering\small
+\caption{Completed paired AFlow--RAG comparisons. Entries are primary test
+F1 in percent under the common actual search-budget ceiling and Top5
+validation protocol. The methods are compared directly by their test F1.
+All five matched seeds are shown; repeated budget endpoints are not
+independent measurements.}
+\label{tab:completed-aflow-paired}
+\input{figures/rag-extended-analysis-20261004/quality/completed-aflow-paired}
+\end{table*}
+
+Complete search bills, including proposal and repair, are 32.187M and
+33.429M weighted tokens for seeds 11 and 23. Their last affordable 32M
+snapshots cost 30.195M and 31.881M. The complete crossing steps cost 1.991M
+and 1.549M, whereas the amounts above the ceiling are 0.187M and 1.429M.
+Validation costs a further 29.319M and 20.773M; test costs 9.698M and 5.552M.
+All 42 and 39 rejected proposal rounds remain charged. Previously paid
+input-index preparation is cited separately, including the reused indices
+in seed 23.
+For seeds 37 and 53, complete search costs 32.739M and 33.184M; the 32M
+snapshots retain 31.013M and 31.542M. Their full crossing evaluations cost
+1.726M and 1.642M, with 0.739M and 1.184M above the ceiling.
+Validation costs 31.315M and 21.950M, and test costs 8.992M and 8.289M.
+All 26 and 42 rejected proposal rounds remain charged; previously paid
+input preparation is accounted for separately.
+For seed 71, complete search costs 33.769M and the 32M snapshot retains
+31.814M. The full crossing evaluation costs 1.955M, of which 1.769M is
+above the ceiling. Validation and test cost 30.119M and 7.741M,
+respectively. All twelve rejected proposal rounds remain charged.
+The five completed runs retain 21.0 evaluations on average at 32M,
+compared with AgentUCT's 17.6. These counts concern affordable complete
+evaluations; all crossing charges remain in the full bills.
+
+\subsection{Completed common-space extension measurements}
+Table~\ref{tab:completed-seed11-extensions} reports each completed optimizer
+trial alongside the 32M test F1 of AgentUCT and MCTS-UCT with the same seed.
+The shared grammar, evaluator, actual-cost cutoffs and held-out selection
+protocol are fixed; each optimizer retains its declared initialization and
+allocation policy. The table reports all 25 individual trials for these five controls. The original four-method comparison, AFlow and
+AgentUCT-StaticFull have separate completed five-seed comparisons.
+Uniform-terminal, FLASH*, EEIPU, LaMBO and MSBO have complete five-seed cohorts
+(Table~\ref{tab:uniform-flash-complete}).
+MSBO--RAG reaches 69.93\% at 32M in seed 23, 0.41 percentage points above
+AgentUCT's 69.52\% with the same seed. Across all five seeds, AgentUCT leads
+MSBO by $2.13\pm2.51$ points at 32M, with four wins and one loss.
+
+\begin{table*}[t]
+\centering\small
+\caption{Completed common-space optimizer trials. F1 is primary test performance
+in percent after Top5 validation selection. The AgentUCT and MCTS-UCT columns
+show their same-seed 32M test F1 directly. $N_{32}$ and cost count complete evaluations and M weighted-token units
+in the last affordable 32M snapshot. Each row is one trial; repeated endpoints
+across budgets reuse measurements.}
+\label{tab:completed-seed11-extensions}
+\input{figures/rag-extended-analysis-20261004/quality/completed-optimizer-seeds}
+\end{table*}
+
+\begin{table*}[t]
+\centering\small
+\caption{Complete five-seed comparisons with five common-space sampling, surrogate and stage-allocation controls. Test F1 is directly compared with AgentUCT at each budget, as mean $\pm$ sample SD across five search seeds. Mean $N$ counts affordable complete evaluations for the listed method; budgets can reuse endpoints and are not independent replications.}
+\label{tab:uniform-flash-complete}
+\input{figures/rag-extended-analysis-20261004/quality/completed-uniform-flash-summary}
+\end{table*}
+
+At 32M, the paired AgentUCT advantages over EEIPU and LaMBO are
+$2.27\pm0.64$ and $3.46\pm2.58$ percentage points (mean $\pm$ sample SD),
+positive in every seed. LaMBO nevertheless exceeds AgentUCT by 0.389 points
+in seed 37 at 24M. The fifteen budget cells for EEIPU and LaMBO reference
+twelve and thirteen distinct complete selected test measurements,
+respectively; repeated endpoints do not supply independent replications.
+In seed 71, full search/validation/test bills are
+33.186M/41.059M/15.392M for EEIPU and 33.987M/20.580M/7.764M for LaMBO.
+Their complete crossing evaluations cost 1.959M and 2.497M, whereas their
+32M overshoots are 1.186M and 1.987M. Paid input preparation is separate;
+these bills cover all three cutoffs' measurement campaign and do not define
+the original 32M-only optimization utility.
+
+FLASH*--RAG uses two D-optimal initial evaluations, three linear-EIPS
+evaluations and fifteen TPE evaluations in seed 11. The pruned tuning
+domain contains 2,304 legal workflows. The asterisk denotes the declared
+common-space adaptation. Complete search costs 33.716M weighted tokens;
+validation and test cost 33.036M and 7.452M, respectively. The last complete
+evaluation adds 1.955M, with 1.716M above the 32M ceiling. EEIPU--RAG performs
+five warmup and thirteen acquisition evaluations in seed 11, with complete search,
+validation and test bills of 33.310M, 41.727M and 15.611M. Its runtime
+handoff preserves the completed search and all previously paid calls.
+Uniform-terminal search samples legal complete workflows without replacement
+and evaluates nineteen of them in seed 11. Its search, validation and test
+bills are 32.526M, 41.589M and 9.105M; the last complete evaluation adds
+1.778M, taking search 0.526M above the ceiling. It uses training evaluations
+and the common Top5 protocol, whereas the separate fifty-workflow reference
+directly measures a prespecified test distribution.
+Shared input-index preparation is cited separately for these methods.
+LaMBO--RAG completes 38 training panels in seed 11: five warmup evaluations
+and 33 local GP-UCB evaluations under slowly moving region sampling.
+Its 16M, 24M and 32M snapshots retain 14, 25 and 37 complete evaluations,
+with test F1 of 65.18\%, 64.60\% and 65.63\%. At 32M the retained bill
+is 31.112M; full search costs 33.058M, including a complete 1.946M
+crossing evaluation and 1.058M above the ceiling. These bills describe seed 11.
+The adaptation uses fixed partition depths $(1,1)$, a finite categorical
+domain and persistent WTB reuse. Its switching-cost helper is not called;
+the measured execution bill is not the numerical switching-cost objective
+of the original algorithm. Saved region probabilities, conditional sampling,
+lazy-prefix eligibility and completed-feedback updates are audited;
+unrecorded GP acquisition rankings and SMB random symbols are not reconstructed.
+MSBO--RAG completes 26 stages in seed 11: twelve evidence stages and
+fourteen terminal evaluations. Every stage joins all 150 training questions
+before its feedback enters the optimizer. Its primary snapshots retain
+9, 10 and 14 complete workflows at 16M, 24M and 32M; test F1 is
+67.82\%, 68.59\% and 68.59\%. The corresponding terminal-boundary bills
+are 13.527M, 19.058M and 29.855M. An evidence-only snapshot can contain
+additional paid work but cannot supply a new terminal quality observation.
+Full search costs 33.277M, including the final evidence-only stage of
+3.422M; the amount above 32M is 1.277M. Validation and test cost 33.994M
+and 12.352M across the three-cutoff measurement campaign. The stage audit
+checks native evidence proxies, per-question reuse of the six-action prefix
+and complete-panel updates. It does not reconstruct unsaved GP candidate
+rankings or Monte Carlo acquisition draws.
+In seed 71, MSBO completes 34 stages: fifteen evidence stages and
+nineteen terminal evaluations. Its 32M primary and auxiliary snapshots
+both end at stage 33 with a bill of 31.010M. The final evidence stage
+costs 1.019M, taking full search to 32.029M; the overshoot is 0.029M.
+Validation and test cost 28.610M and 6.970M across the three cutoffs.
+The 5.613M cost of all unadvanced evidence inventory spans the full search
+and is distinct from this final crossing stage. Paid input preparation
+remains separate. Across the five seeds, the fifteen MSBO budget cells
+reference twelve complete selected test measurements; statistical
+replication remains at the five search seeds.
+
+In seed 23, MSBO completes thirteen evidence stages and seventeen terminal
+evaluations. Its 32M primary snapshot ends at stage 28 with a bill of
+26.855M. Stage 29 adds evidence and raises the bill to 30.284M without
+another complete workflow evaluation; it belongs to the auxiliary snapshot.
+Stage 30 costs 3.558M and crosses the ceiling, bringing full search to
+33.842M. The 6.987M paid after the last terminal snapshot covers both
+evidence stages, whereas the amount above the ceiling is 1.842M.
+Validation and test cost 32.506M and 9.209M, respectively, across the
+three-cutoff measurement campaign. All of these charges are retained.
+These are individual-seed measurements.
+For FLASH* and EEIPU, saved traces establish the training observations, selected paths, phase
+boundaries and downstream selection. They do not retain the complete
+acquisition rankings or random-draw transcript, so the audit does not claim
+to reconstruct every numerical argmax.
+
+\subsection{The RAG execution contract}
+The main grammar performs one retrieval round and chooses a query strategy,
+retriever, evidence-selection rule and retrieval width. Query choices include the current query,
+pseudo-document-only retrieval, Query2doc with one or three copies of the
+current query followed by its pseudo-document, two-query decomposition,
+a concise rewrite, two synonymous rewrites, and HyDE. Synonymous rewrites
+preserve one information need; decomposition splits it into subquestions.
+Multi-round retrieval is deferred to a separate lower-priority ablation.
+
+Ordinary queries have 30 retriever options: BM25, E5, Qwen embedding,
+the original four-way RRF, five BGE-M3 dense/sparse mixtures with dense weights
+$0,0.25,0.5,0.75,1$, 15 RRF source-set/constant combinations,
+and six weighted fusions.
+The five RRF source sets are BM25+E5, BM25+BGE, BM25+Qwen,
+E5+BGE, and BM25+E5+BGE+Qwen; each uses $k\in\{10,60,100\}$.
+BGE denotes its dense representation in these five sets.
+Weighted fusion combines BM25 with E5 or Qwen. Each source's scores are
+min--max normalized over the candidate documents; constant scores map to zero.
+The BM25 weight is $\alpha\in\{0.25,0.5,0.75\}$ and the dense weight is $1-\alpha$.
+HyDE instead selects one of three passage encoders: E5, BGE dense or Qwen.
+Generated passages guide retrieval and never enter the evidence pool as sources.
+
+Evidence selection uses relevance or MMR with relevance weight
+$0.3,0.6,0.9$; retrieval width is $2,4,6,10$, capped by the candidate count.
+The workflow then chooses identity or Qwen reranking and selects the first
+$2,4,6$ available documents, capped by the evidence count. It preserves their
+full source text and applies one CPU-only ordering: ranked, reversed, or ends.
+The ends order alternates relevance ranks between the front and back, giving
+$1,3,5,6,4,2$ for six documents. All three orders preserve the selected set.
+For two documents, ends and ranked coincide. Ordering performs no model call;
+the selected ordered context is passed to one final answer-generation stage.
+There is no separate model-based order evaluator. Format retries follow the
+same charged retry contract as every other method.
+
+The retrieval block has $A_0=(7\cdot30+3)\cdot4\cdot4=3408$ choices.
+Two rerankers, three evidence widths and three orders give
+$18A_0=61{,}344$ syntactic terminal workflows. The final answer action is
+uniquely determined by the selected width and adds no choice factor.
+Input-specific coincidences and width truncation can make different paths
+execute the same behavior. This count does not assert distinct effective policies.
+The finite-tree theorem concerns the declared terminal grammar.
+
+The first retrieval retains the grounded evidence assessment used in the
+loop-value diagnostic: Qwen selects document and sentence identifiers, and the
+adapter recovers exact source text. Its costs and retries are recorded.
+Identity reranking prioritizes cited documents within the retrieved evidence;
+the alternative reranker uses the same Qwen model. Neither controller receives
+gold answers or supporting-document labels. WTB checkpoints preserve the selected
+documents, their full text, the chosen order and the answer state. Candidates
+with different orders share the prefix through evidence selection and execute
+their own answer suffix. Compression is excluded from the main grammar.
+
+\subsection{Paper-grounded reference workflows}
+\label{app:paper-workflow-references}
+The earlier Agent-UCT study compared searched configurations with fixed
+framework presets, then examined held-out quality, chosen components and
+execution costs~\citep{li2026agentuct}. We retain these questions with three
+published pipelines. Each cited paper already combines at least two of the
+mechanisms represented in our grammar: Query2doc combines generated query
+expansion with lexical retrieval; HyDE combines hypothetical-document
+generation with dense retrieval; RankGPT combines candidate retrieval with
+listwise language-model reranking.
+
+All references use the same candidate documents, grounded evidence
+assessment, one retrieval round, retrieval width six, four retained documents,
+ranked context and Qwen3.5-4B answer generation. Unspecified slots use the
+original query, BM25, relevance selection and identity reranking. The common
+identity reranker prioritizes documents cited by the grounded assessment,
+as in the search grammar. These are shared-space adaptations of the three
+published retrieval pipelines, evaluated as complete QA workflows.
+
+\begin{table}[t]
+\centering\small
+\caption{Three fixed references, each based on a published combination of
+implemented mechanisms. All are evaluated on the same 300 primary test
+questions without training or validation selection. Test F1 is in percent;
+each recipe is a single fixed-workflow measurement.}
+\label{tab:paper-workflow-recipes}
+\begin{tabularx}{\linewidth}{@{}lp{0.26\linewidth}Xr@{}}
+\toprule
+ID & Published pipeline & Fixed component choices & Test F1\\
+\midrule
+P01 & Query2doc--BM25~\citep{wang2023query2doc} & \path{query.query2doc:q=3} then \path{retriever.bm25}. & 61.60\\
+P02 & HyDE--E5~\citep{gao2023hyde} & \path{query.hyde} then \path{retriever.hyde_e5}. & 62.89\\
+P03 & RankGPT-style BM25--Qwen~\citep{sun2023rankgpt} & \path{retriever.bm25} then \path{reranker.qwen3}. & 62.53\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The three adapted references reach 61.60--62.89\% test F1, below the
+69.57\% mean for AgentUCT's selected workflows at 32M. The selected workflows
+improve on these specified recipes; the matched MCTS-UCT comparison isolates the
+allocation change.
+Their complete test-execution bills are 3.338M, 2.971M and 5.113M weighted
+tokens, respectively, including one excluded sentinel per recipe.
+Previously paid input-index preparation is referenced separately. These
+measurements supply no across-run SD. The completed four-contrast analysis
+includes these three fixed recipes and the mean of all fifty random workflows.
+
+Query2doc uses our Qwen JSON prompt and three query copies, compared with
+the original four-shot prompt, text-davinci-003 and five copies.
+HyDE uses one Qwen-generated passage with E5 document-side encoding,
+compared with the original InstructGPT and Contriever/mContriever setup.
+It does not average multiple generated-document embeddings; E5's training
+also means this adapter does not inherit an unsupervised-retrieval claim.
+P03 uses a single listwise window of at most six documents with Qwen3.5-4B,
+compared with RankGPT's BM25 top-100 candidates and GPT sliding-window
+protocol. Up to two format attempts are allowed, all executed attempts are
+charged, and two invalid orders retain the common fusion order with a
+recorded fallback. No retriever or reranker is retrained for this comparison.
+
+The exact nine-action paths are frozen in
+\path{configs/rag-followup-v2/fixed-test-manifest.json}. An independent
+native-grammar check confirms all three are legal terminal workflows.
+The former twelve-recipe catalogue and additional component sensitivity
+sweep are outside this accelerated experiment plan.
+
+Fifty further complete workflows were sampled uniformly without replacement
+from all 61,344 legal terminals, using seed 20261004 before their test
+execution. Every sampled workflow was evaluated. Mean test F1 was
+$60.58\pm5.22\%$ across workflows, the median was $62.11\%$, and the
+interquartile range was $57.19$--$65.20\%$. The full observed range was
+$48.43$--$68.39\%$; no draw was selected by test quality. Mean EM was
+$46.39\pm4.88\%$. This no-search random-composition reference is distinct
+from MCTS-Random allocation and from uniform-terminal search, which pays
+for training evaluations and uses Top5--validation selection.
+The three paper references and fifty random workflows require 15,900
+primary question--workflow executions before reuse, plus separate sentinels.
+All 15,900 primary outcomes and 53 sentinel outcomes completed. The fifty
+random workflows incurred 164.392M weighted-token units of test execution;
+the three fixed recipes incurred 11.422M. The combined 175.815M bill
+contains 143,630 settled physical calls, with no failed calls or new input
+preparation. This is the cost of measuring the reference distribution,
+separate from an optimizer's search and validation bill.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=3.3in]{figures/rag-extended-analysis-20261004/quality/random-composition-distribution.pdf}
+\caption{Test F1 of all fifty prespecified random complete workflows. Each
+point is one workflow on the same 300 primary questions. The gray band marks
+the interquartile range and the dashed line the median; neither is a
+confidence interval. The distribution describes unoptimized composition;
+no draw is promoted to a selected baseline.}
+\label{fig:random-composition-distribution}
+\Description{All fifty sampled complete workflows are shown on a common test F1 axis, retaining the full observed distribution.}
+\end{figure}
+
+Strong-model planning was specified for native \path{deepseek-v4-pro} and
+OpenRouter \path{openai/gpt-5.5}, with five plans each and high reasoning
+effort~\citep{deepseek2026v4pro,openai2026gpt55}. Both receive identical task
+instructions, grammar, component descriptions and three frozen training
+examples, with no test inputs or quality feedback. The first generation
+requests returned insufficient balance and regional unavailability,
+respectively. These references are deferred; provider rejection is not a
+zero-quality workflow measurement.
+
+The active paired-test family contains four contrasts: the three fixed
+recipes and the mean across all fifty random workflows, each against
+AgentUCT's mean per-question F1 vector across its five seeds at 32M.
+Holm adjustment covers this family.
+The question is the paired unit; search-seed and random-workflow variation
+are displayed separately. Full design details appear in
+Section~\ref{sec:workflow-references}.
+
+\begin{table}[t]
+\centering\small\setlength{\tabcolsep}{3pt}
+\caption{Question-paired reference comparisons at the fixed 32M endpoint.
+$\Delta$ is AgentUCT's five-seed mean minus the reference. Intervals are
+pointwise 95\% question-bootstrap intervals conditional on the observed
+workflows; Holm adjusts only the four two-sided sign-randomization $p$ values.}
+\label{tab:reference-paired-effects}
+\input{figures/rag-extended-analysis-20261004/quality/random-fixed-four-contrast}
+\end{table}
+
+The mean differences are 7.97, 6.68 and 7.04 percentage points for the
+three fixed pipelines, and 8.98 points for random composition
+(Table~\ref{tab:reference-paired-effects}). The random-composition contrast
+has a conditional interval of [7.17, 10.93] points. Resampling random
+workflows alone gives [7.52, 10.45] points; resampling both random
+workflows and questions gives a sensitivity interval of [6.72, 11.53] points,
+with the five AgentUCT seeds still fixed. The AgentUCT seed means range
+from 69.20\% to 69.97\%, with sample SD 0.28 points; this search-seed
+variation is separate from question uncertainty and the 5.22-point spread
+across random workflows.
+
+The paired bootstrap used 10,000 draws with seed 20261002. The two-sided
+sign randomization used 100,000 draws with seed 20261005 and the
+plus-one correction; the random-mean contrast had no sampled value as
+extreme as the observed statistic, giving unadjusted $p=1/100001$, not zero.
+Workflow-only and crossed workflow--question sensitivities used 10,000
+draws each, with seeds 20261006 and 20261007. All resampling moved complete
+question vectors together. These numerical choices were recorded before
+resampling, after aggregate outcomes had been inspected. The comparisons
+are retrospective on the existing panel and require the stated
+question-level sign-exchangeability null; they do not establish performance
+on new datasets or new search seeds.
+
+\subsection{Allocation and controls}
+Search and validation contain 150 and 300 disjoint hard questions from the
+official HotpotQA training split. The primary test contains 300 hard questions
+from the official validation split. Training and validation use sampling seed
+20261003, excluding earlier search, validation, development and calibration
+questions; the primary test remains unchanged. Earlier mixed-difficulty
+searches are historical diagnostics outside this cohort.
+Each method and seed owns one tree over all 150 training questions. A complete
+workflow evaluation returns mean answer F1 over these 150 questions and backs
+up that single return to the expanded node and its ancestors. The tree retains
+its statistics, random state and qid--prefix cache between evaluations.
+At each retained actual-cost snapshot, completed distinct workflows are ranked
+by training mean F1, with first evaluation breaking ties. The top five are
+evaluated on 300 validation questions. Highest validation mean F1 selects the
+endpoint, with training rank breaking ties; 300 held-out questions provide the
+primary test score. Validation and test scores never enter reward backup.
+An unchanged workflow on an unchanged held-out panel is measured once and
+referenced by any repeated measurement request.
+
+The core comparison contains MCTS-Random, MCTS-UCT, AgentUCT with
+Policy-complete costs, and AgentUCT-NextC. MCTS-UCT supplies the
+standard UCB-guided Monte Carlo tree search baseline. MCTS-Random retains the same
+tree and raw-return backup but selects children uniformly, independently of
+their reward statistics; this is not uniform sampling over terminal workflows. Expansion and
+rollout remain uniform. Five paired seeds (11, 23, 37, 53 and 71) define twenty
+completed trials. The first eight trials were audited before continuing the
+remaining seeds with unchanged settings; all twenty now have saved-trajectory,
+accounting and endpoint-selection checks.
+New seeds retain the same primary questions and assess search-seed variation.
+If their primary scores are used to change the scientific settings, subsequent
+results on that panel are exploratory. Independent confirmation of such a
+change requires unused hard test questions fixed before execution.
+Each method has its own cache and tree, with the same initial state,
+controller, model, resource accounting and validation protocol. The
+demand-profile theorem also covers selective panels; this fixed full-panel
+experiment instantiates its compression case.
+
+AgentUCT-NextC estimates the first positive unpaid execution per query.
+Policy-complete prices the complete reward using 16 legal completions sampled
+from smoothed historical prefix transitions. They use the same samples at a
+common state, isolating the omitted suffix, and share the physical-price
+learning rule and current cache observations. Additional allocation-stage
+variants, Uniform-complete and the no-cache GPU arm are deferred. A comparison
+of incidence and residual prefix totals can use saved states without another
+model run; it is not an online search requirement.
+
+Price priors come from independent fixed-path calibration on questions excluded
+from search and evaluation. Each completed training evaluation updates physical
+cost means and prefix-transition counts. Cache hits produce no cold-price sample.
+The model uses qid--prefix, prefix and component means in that order, with a
+calibration pseudo-observation. The historical completion law approximates
+subsequent demand; it is not the exact current UCT policy expectation.
+Evidence selection and CPU ordering have zero model-token price. Width-conditioned
+answer prices belong to the final answer edge.
+
+The global scale is 150 times the median calibrated one-query completion bill;
+tiny retains this same value. Token receipts are weighted by model parameter
+count in billion-parameter-token units. Batch charges use logical request tokens,
+including retries and excluding padding; padded slots and physical batch sizes
+are recorded separately. The budget is a resource proxy, with no equivalence
+to a fixed GPU-time or FLOP budget. Raw tokens, elapsed model time and
+estimator CPU time are retained. Index preparation, search, validation and
+held-out measurement have separate receipts. Offline checks compare recorded
+cost forecasts with the selected continuation's realized bill. Their difference
+combines continuation variability and price error; it does not isolate either
+source or measure an unselected continuation. No calibrated error radius is claimed.
+
+The frozen protocol specifies five seeds and one 32M weighted-token budget,
+the same model context/output limits and an evaluation-count safety cap. Each tiny
+configuration changes only its dataset path: it loads three training queries,
+one validation query and one development sentinel. Formal measurement excludes
+that sentinel from the 300-query primary held-out score. Test F1 and EM,
+physical costs and distinct syntactic workflows accompany
+the common-budget comparison. Means and sample SDs describe variation across
+the five search seeds on the fixed test panel; query--seed pairs are not
+treated as independent repetitions.
+
+Validation-selected primary-test F1 at a fixed search budget is the primary
+outcome. The search backs up training F1, uses cost-aware UCT for allocation,
+and selects the final workflow by validation F1 alone. As an auxiliary diagnostic,
+we report endpoint utility $J=F-\lambda_J C_{\mathrm{opt}}/\cref$ using
+primary held-out F1, the existing reporting weight $\lambda_J=0.05$, and the
+fixed calibration scale $\cref=1{,}470{,}690.0198555747$. The full physical
+$C_{\mathrm{opt}}$ includes search, its complete crossing evaluation, and
+validation, including failed attempts and retries. Test measurement and common
+index preparation have separate bills and are excluded from this declared
+optimization utility. A secondary snapshot utility substitutes the retained
+search bill and is labeled separately; it does not remove crossing work from
+the full-bill utility or physical ledger. Negative $J$ values are possible under
+this fixed scale. Neither the reporting weight nor the scale is selected from
+test outcomes. Adding a constant would change only the displayed origin;
+changing the weight could change rankings. We retain the raw definition and
+display same-seed $\Delta J$ against MCTS-UCT in the main five-seed table.
+Search and endpoint selection do not optimize this reporting utility. Joint improvements
+in $J$ and F1 are empirical questions, distinct from the allocation theorem.
+Utility comparisons use one full optimization bill per seed; a shared bill does not create
+independent query-level cost observations. We decompose each difference into
+the F1 difference and phase-specific cost contributions, further separating
+retained search from complete evaluations after the snapshot cutoff. The latter
+is the whole evaluation bill, not only the amount above the reporting budget.
+A validation-cost
+saving is part of end-to-end utility, not evidence that a search-time cost
+forecast was accurate. All three baseline comparisons are retained, including
+unfavorable differences. An unknown physical charge prevents reporting a
+complete utility value.
+This comparison concerns allocation among budgeted search methods. It does not
+establish that a one-off search investment is preferable to a fixed workflow
+with zero optimization cost.
+
+Table~\ref{tab:all-seeds} preserves every primary score and full-bill utility.
+All 214 saved adaptive selections occur at the root. This experiment does not
+demonstrate deeper recursive selection gains. Native-checkpoint and reuse
+checks cover the explicitly sampled trajectories; they do not constitute a
+full native-state audit of every invocation.
+
+\begin{table*}[t]
+\centering\small
+\caption{All twenty 32M runs. Each entry is primary test F1 (\%) / full-bill $J$.}
+\label{tab:all-seeds}
+\begin{tabular}{rllll}
+\toprule
+Seed & AgentUCT & MCTS-UCT & AgentUCT-NextC & MCTS-Random\\
+\midrule
+11 & 69.5109 / $-1.251646$ & 69.4443 / $-1.242602$ & 69.5109 / $-1.284709$ & 69.3527 / $-1.189892$\\
+23 & 69.5228 / $-1.262981$ & 67.3162 / $-1.429808$ & 69.5228 / $-1.262340$ & 67.6926 / $-1.432710$\\
+37 & 69.1975 / $-1.164197$ & 68.6871 / $-1.157955$ & 64.8892 / $-1.200446$ & 69.4880 / $-1.165447$\\
+53 & 69.9657 / $-1.415753$ & 66.5768 / $-1.434304$ & 69.1490 / $-1.274501$ & 69.4550 / $-1.412869$\\
+71 & 69.6305 / $-1.456986$ & 68.0144 / $-1.470387$ & 68.0144 / $-1.480661$ & 68.0144 / $-1.474790$\\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+The five-seed AgentUCT-minus-baseline mean $\Delta J$ is
+$+0.03670$ against MCTS-UCT, $-0.00978$ against AgentUCT-NextC and
+$+0.02483$ against MCTS-Random. Table~\ref{tab:all-seeds} gives the five underlying
+utility pairs for each comparison.
+For the random comparison, mean contributions are $+0.00765$ from F1,
+$-0.00302$ from retained search, $+0.01273$ from complete crossing evaluations,
+and $+0.00747$ from validation. Against MCTS-UCT, the F1, retained-search,
+complete-crossing and validation contributions are $+0.01558$, $+0.00084$,
+$+0.01450$ and $+0.00578$, respectively. Against AgentUCT-NextC, F1 contributes
+$+0.01348$, full search $+0.00294$ and validation $-0.02620$.
+
+Search runs without cost-based admission checks. Every evaluation finishes and
+its complete physical bill is recorded. For each reporting budget $B$, retain
+the last complete snapshot with cumulative search cost at most $B$. Its tree
+statistics, cache membership and shortlist use only that trace prefix.
+The evaluation crossing the largest reporting budget also finishes; its work
+and overshoot remain in the raw trajectory, and its reward cannot enter an
+earlier snapshot. Validation and test measurement use each retained shortlist
+and have separately reported costs. Index preparation is also reported
+separately. The reporting budgets do not change the selection rule or interrupt
+a model call. The finite-tree theorem applies at the retained evaluation
+count $n(B)$; it does not assert $O(\log B)$ physical-budget regret.
+
+\subsection{Multi-seed summaries and reporting units}
+All budget summaries use the same five search seeds, with one validation-selected
+primary outcome per method, seed and budget. Tables report arithmetic means and
+sample standard deviations, $s=\sqrt{\sum_{i=1}^{5}(x_i-\bar x)^2/4}$.
+The uncertainty bars in the budget and resource figures show this between-seed
+spread; they are not standard errors or confidence intervals. A reused endpoint
+keeps its original complete test measurement. Reuse across budgets does not
+increase the sample size.
+
+For each budget and baseline, we subtract its primary score from AgentUCT's
+score for the same seed. Tables report the mean and sample SD of these five
+differences, together with wins, ties and losses: the numbers of positive,
+zero and negative saved differences. F1 is primary and EM auxiliary.
+These summaries describe the observed seed variation on the fixed question
+panel. Detailed reporting was added to the frozen runs without changing
+allocation or endpoint-selection parameters.
+
+\subsection{Budget-dependent held-out quality}
+\label{sec:budget-detail}
+All three cutoffs use the same five search seeds and the complete
+Top5--validation--primary-test procedure. Table~\ref{tab:budget-quality-full}
+reports all method--budget means and sample SDs; the individual seed tables
+below preserve the complete sixty outcomes. Early snapshots were read from
+frozen completed search prefixes. Only missing validation panels and newly
+selected primary endpoints were executed, in separate measurement caches.
+No later rewards, prices or execution-cache entries were imported into search.
+Across both early-budget campaigns, 242,293 new physical calls incurred
+375.606M weighted-token units. These are additional measurement costs, not
+observed historical early-stopping optimization bills. We therefore do not
+construct 16M or 24M values of $J$.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Complete matched-five-seed budget analysis. Primary test F1 and EM
+are reported as mean $\pm$ sample SD. Each method--budget row has five seeds;
+reused test measurements across budgets are not additional independent trials.}
+\label{tab:budget-quality-full}
+\input{figures/rag-extended-analysis-20261004/quality/quality-table}
+\end{table}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/rag-extended-analysis-20261004/budget/five-seed-budget-test.pdf}
+\caption{Individual seed trajectories behind the main budget comparison.
+Each method panel shows the same five seeds as thin lines and their mean as
+a bold line; shading is $\pm$ one sample SD. Unchanged endpoints within a
+trial share a complete test measurement across budgets.}
+\label{fig:budget-quality-seeds}
+\end{figure*}
+
+The eight initial root evaluations cost 12.287--16.626M weighted tokens across
+runs. At 16M, only seed 23 retained two completed adaptive evaluations;
+the other four seeds retained none, and seed 53 retained only seven
+initialization evaluations.
+Consequently, the four methods selected the same within-seed endpoint at 16M.
+AgentUCT, AgentUCT-NextC and MCTS-Random had identical test F1; MCTS-UCT's mean differed
+by 0.0133 points because seed 11 used a fresh execution of the same workflow.
+At 24M, mean F1 was 69.5655\%, 68.0077\%, 67.8342\% and 68.4382\% for
+AgentUCT, MCTS-UCT, AgentUCT-NextC and MCTS-Random, respectively. Their 32M values were
+69.5655\%, 68.0077\%, 68.2173\% and 68.8006\%.
+
+Table~\ref{tab:initialization-paired-evidence} locates the start of adaptive
+allocation within the actual budget. For seeds 23, 37 and 53, the cost term
+changes the saved AgentUCT action at its first adaptive decision; for seeds
+11 and 71, the first change occurs at evaluation 11. These are comparisons
+with the cost-free index in the same saved state, not reconstructed MCTS-UCT
+trajectories. Four seeds select different endpoints from MCTS-UCT, with test-F1
+gains of 0.51--3.39 points. Seed 11 selects the same endpoint, and its small
+difference comes from separate executions. The table connects initialization,
+allocation and endpoint changes without attributing an endpoint's F1 gain
+to a particular changed action.
+
+\begin{table*}[t]
+\centering\small
+\caption{Where adaptive allocation becomes observable. A and U denote
+AgentUCT and MCTS-UCT. Costs are M weighted tokens. ``First A feedback'' is the
+cumulative bill after AgentUCT's first complete adaptive evaluation;
+``First changed choice'' is the bill before its first decision whose priced
+argmax differs from the same-state cost-free argmax. $\Delta$F1 is AgentUCT
+minus MCTS-UCT in percentage points at both 24M and 32M; these budgets reuse the
+same endpoint measurement. Configuration IDs resolve in the workflow dictionary.}
+\label{tab:initialization-paired-evidence}
+\input{figures/rag-extended-analysis-20261004/allocation/initialization-paired-evidence}
+\end{table*}
+
+The lack of monotonicity has a concrete selection explanation. For
+AgentUCT-NextC seed 53, a HyDE workflow ranked fourth in the 24M training
+shortlist but sixth at 32M, outside the fixed Top5. Its validation F1 of
+73.0699\% exceeded the other eligible winner's 72.4927\%; its primary F1 was
+63.2059\%, versus 69.1490\% for the 32M winner. Saved shortlist membership,
+validation order, original predictions and official scores were checked.
+AgentUCT-NextC seed 37 instead decreased from 69.1975\% at 24M to 64.8892\%
+at 32M. A larger budget can change the shortlist and validation winner without
+improving that winner's test performance. Neither these outcomes nor the flat
+AgentUCT curve was used to tune $\beta$, choose a new stopping budget or
+extend the search.
+
+\subsection{AgentUCT versus AgentUCT-NextC}
+\label{sec:nextc-detail}
+This comparison retains the same completion sampler and price-learning rule
+while changing which unpaid costs enter selection. All five paired 16M
+endpoints coincide; three coincide at 24M and two at 32M.
+The paired F1 difference is $1.73\pm2.93$ points at 24M and
+$1.35\pm1.79$ points at 32M. These are means and sample SDs of paired
+\emph{differences}, not SDs pooled across independent methods.
+Table~\ref{tab:nextc-descriptive} reports this contrast together with EM
+and the direction of each seed's difference.
+
+At 32M, AgentUCT used 7.385M raw LLM tokens in its retained search versus
+7.399M for AgentUCT-NextC, a 0.18\% difference. Their mean logical hit rates
+were 6.79\% and 6.27\%, respectively, with the denominator defined below.
+AgentUCT's full search bill was 0.086M weighted tokens lower, but validation
+was 0.771M higher. Thus its full optimization bill was 0.684M higher, yielding
+the negative mean $\Delta J$ despite higher primary F1. This separates the
+observed endpoint-quality result from total optimization expense and does not
+establish calibrated forecasts or a general cache-saving mechanism.
+
+\begin{table}[htbp]
+\centering\small
+\caption{AgentUCT minus AgentUCT-NextC. Differences and their sample SDs
+are in percentage points across five paired seeds. W/T/L counts positive,
+zero and negative differences; the same rows appear in
+Table~\ref{tab:budget-descriptive}.}
+\label{tab:nextc-descriptive}
+\input{figures/rag-extended-analysis-20261004/quality/agentuct-vs-nextc-descriptive-table}
+\end{table}
+\begin{table}[htbp]
+\centering\small\setlength{\tabcolsep}{3pt}
+\caption{All paired budget comparisons, AgentUCT minus each baseline.
+Differences and sample SDs are in percentage points over five seeds.
+W/T/L gives the numbers of seed-level wins, ties and losses. F1 is primary
+and EM auxiliary.}
+\label{tab:budget-descriptive}
+\input{figures/rag-extended-analysis-20261004/quality/all-paired-descriptive-table}
+\end{table}
+
+% The generated file contains one complete table per budget.
+\input{figures/rag-extended-analysis-20261004/quality/seed-values-table}
+
+\subsection{Root allocation and selected configurations}
+\label{sec:allocation-configurations}
+All 214 adaptive selections in the full original trajectories occurred at
+the root. The retained 32M prefixes contain 194 of these; the twenty crossing
+evaluations account for the remainder. Tables~\ref{tab:root-selections}
+and~\ref{tab:root-costs} separate root-allocation counts from complete evaluation
+bills. Relative to MCTS-UCT, AgentUCT selected the HyDE root more often
+($1.8\pm0.84$ versus $1.2\pm0.84$ times after initialization) and rewriting
+less often ($0.8\pm0.45$ versus $1.4\pm0.55$). Relative to AgentUCT-NextC,
+it also selected HyDE more often ($1.8$ versus $0.8$ times).
+The cost attributed to a root is the entire evaluation beginning at that root,
+including all later components, not the cost of query construction alone.
+These saved allocations locate the observed policy differences; they do not
+identify a causal contribution of any query operator to test F1.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Adaptive root selections in retained 32M prefixes, mean $\pm$
+sample SD over five seeds. Common initialization and the crossing evaluation
+are excluded. Subsequent expansion and rollout remained uniform.}
+\label{tab:root-selections}
+\input{figures/rag-extended-analysis-20261004/allocation/root-selection-counts-32m}
+\end{table}
+\begin{table}[htbp]
+\centering\small
+\caption{Retained 32M cost by initiating root action, in M weighted tokens
+(mean $\pm$ sample SD). Each entry includes the entire evaluations in that
+group, including initialization. These are not component-specific query costs.}
+\label{tab:root-costs}
+\input{figures/rag-extended-analysis-20261004/allocation/root-actual-cost-32m}
+\end{table}
+
+We report ``best configurations'' as validation-selected endpoints, not the
+best test scores among inspected workflows. The sixty selected cells contain
+20 distinct configurations: five at 16M, fifteen at 24M and fifteen at 32M.
+At 24M and 32M all five AgentUCT endpoints are unchanged, as are all five MCTS-UCT
+endpoints; AgentUCT-NextC changes three and MCTS-Random one. Those stable cells
+reuse their corresponding test measurements. Across all budgets, 37 stored
+test measurements support the sixty reported outcomes. Identical workflows in
+independent runs need not share a stored test measurement.
+
+At 32M, AgentUCT's five selected workflows use five different query actions:
+rewriting, decomposition, document generation, Query2doc with mixture weight
+three, and synonyms. All five use the identity reranker; context widths are
+two, four, four, six and two in seed order. This diversity shows that the
+observed result is not tied to a single selected pipeline, but operator
+frequencies are not ablation effects. The tables below list all sixty
+validation winners, their validation/test scores, complete component sequences
+and test-source identifiers. The dictionaries retain exact saved operator
+parameters, and repeated source codes identify shared measurements.
+
+\ifdefined\AgentUCTReading\else\clearpage\fi
+\input{figures/rag-extended-analysis-20261004/best-configs/best-configurations-tables}
+\ifdefined\AgentUCTReading\else\clearpage\fi
+
+\subsection{Physical tokens, crossing evaluations and cache reuse}
+\label{sec:resource-analysis}
+We aggregated the physical charge identifiers already attached to each complete
+search evaluation. At each cutoff, only identifiers in its saved complete prefix
+contributed to the retained bill. Raw input/output tokens were checked against
+all recorded model attempts and the frozen model-size weights. Table~\ref{tab:raw-model-tokens}
+reports raw model categories, while Table~\ref{tab:search-crossing} separates
+weighted retained cost from the entire first completed evaluation after the
+cutoff. The latter is observed in the original 32M search, not an independently
+rerun early-stop experiment. Additional held-out measurement bills remain
+separate. Table~\ref{tab:original-phase-tokens} reports all original phases;
+only full search and validation enter the declared $C_{\rm opt}$.
+
+LLM input tokens account for 96.2\% of retained 32M weighted search cost in
+each method, pooling its five seed bills. Encoder tokens and LLM output tokens
+are therefore reported explicitly rather than interpreting the weighted total
+as a count of generated answer tokens (Figure~\ref{fig:resource-composition}).
+The original receipts contain 300,064 model attempts without semantic
+\texttt{purpose}/\texttt{role} fields. Their component-edge labels identify
+where a bill was recorded, not necessarily the internal purpose of each call;
+for example, a \texttt{retrieve.k} edge can contain generation. We do not infer
+an exhaustive query-generation/reranking/answering split from those labels.
+Paid failure costs are a subset of the total, not an extra additive category,
+and several model attempts within an edge need not be retries.
+
+\begin{table}[htbp]
+\centering\small\setlength{\tabcolsep}{3pt}
+\caption{Raw retained-search token counts, mean $\pm$ sample SD over five seeds.
+M and k denote millions and thousands. Encoder columns are input tokens;
+all generative roles share Qwen3.5-4B. These are observed logical request tokens,
+including recorded attempts and excluding padding.}
+\label{tab:raw-model-tokens}
+\input{figures/rag-extended-analysis-20261004/cost-cache/raw-model-tokens}
+\end{table}
+\begin{table}[htbp]
+\centering\small\setlength{\tabcolsep}{4pt}
+\caption{Retained search and the first complete crossing evaluation, in M
+weighted-token units (mean $\pm$ sample SD). $N_B$ counts complete evaluations;
+Selections counts saved adaptive child-selection decisions. Crossing is its
+whole bill, not just the amount above the cutoff.}
+\label{tab:search-crossing}
+\input{figures/rag-extended-analysis-20261004/cost-cache/search-and-crossing}
+\end{table}
+\begin{table}[htbp]
+\centering\small\setlength{\tabcolsep}{4pt}
+\caption{Original 32M execution ledger by phase, mean $\pm$ sample SD across five
+seeds. LLM counts are raw tokens; Cost is weighted tokens, all in millions.
+Full search includes the complete crossing evaluation. Preparation uses encoder
+tokens, so its zero LLM count can accompany a positive bill. Test and preparation
+are excluded from $C_{\rm opt}$; later snapshot measurement campaigns are separate.}
+\label{tab:original-phase-tokens}
+\input{figures/rag-extended-analysis-20261004/cost-cache/original-phase-tokens}
+\end{table}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/rag-extended-analysis-20261004/cost-cache/retained-token-cost.pdf}
+\caption{Physical composition of each retained search bill. Bars show five-seed
+means, dots show each seed's total, and whiskers show sample SD of the total.
+The encoder contribution is small on this common scale and is resolved in
+Table~\ref{tab:raw-model-tokens}. Complete crossing and held-out bills are excluded
+from these bars and reported separately.}
+\label{fig:resource-composition}
+\end{figure}
+
+\paragraph{Bipartite inventory and logical reuse.}
+A saved key is a pair consisting of a query identifier and its complete
+execution prefix. We counted these objects from completed-prefix records,
+without instantiating an earlier cache or consulting keys introduced by later
+search or held-out evaluation. The 32M inventories also matched the saved
+materialized inventories. For this fixed full-panel design, every successful
+prefix covers all 150 queries, so adjacency density over the materialized
+prefix set is one at every measured cutoff. This is not density over all
+legal prefixes in the grammar. This is the rectangular special case of the
+information analysis, not an empirical efficiency advantage of a denser graph.
+
+The logical hit fraction is the sum of recorded restored-prefix edges divided
+by the sum of all workflow-prefix visits across complete question evaluations.
+It includes zero-token control and ordering edges; it is not hits divided by
+physical LLM calls. At 32M, AgentUCT, MCTS-UCT, AgentUCT-NextC and MCTS-Random have mean
+logical hit fractions of 6.79\%, 6.81\%, 6.27\% and 7.04\%, respectively
+(Table~\ref{tab:cache-efficiency}). AgentUCT's 0.51-point increase over
+AgentUCT-NextC accompanies only 0.183\% fewer raw LLM tokens in retained search.
+Its LLM tokens per complete evaluation are higher than MCTS-UCT's (421.7k versus
+418.1k). Differences in the selected workflow mix affect both quantities.
+Without a matched no-cache execution, these observations do not estimate
+avoided tokens or wall-clock speedup (Figure~\ref{fig:cache-work}).
+
+\begin{table}[htbp]
+\centering\small\setlength{\tabcolsep}{3pt}
+\caption{Cache inventory and observed work, mean $\pm$ sample SD over five seeds.
+Keys are distinct query--prefix pairs, Prefixes counts distinct full prefixes,
+and Visits counts logical prefix accesses. Hit is a per-run ratio averaged
+across seeds. LLM/eval is actual input plus output tokens per complete
+150-question evaluation. Densities over the observed prefix sets are one.}
+\label{tab:cache-efficiency}
+\input{figures/rag-extended-analysis-20261004/cost-cache/cache-efficiency}
+\end{table}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/rag-extended-analysis-20261004/cost-cache/cache-and-llm-work.pdf}
+\caption{Saved objects, observed logical reuse and actual LLM work have different
+interpretations. Markers/lines show means, whiskers show sample SD, and faint
+points show the five seeds. Horizontal offsets separate methods at the same
+budget; they are not different budgets. A lower SD whisker can extend below
+zero because SD describes spread rather than a probability interval. Cache
+hits are not a measured counterfactual saving.}
+\label{fig:cache-work}
+\end{figure}
+
+\ifdefined\AgentUCTReading\else\clearpage\fi
+\subsection{Execution variation and trace coverage}
+Fresh executions can differ numerically. Across three shared initialization
+paths and 450 question evaluations per method, MCTS-UCT differed from AgentUCT on
+four answers, two affecting F1; AgentUCT-NextC and MCTS-Random matched AgentUCT.
+The largest panel-mean difference was $9.52\times10^{-4}$, with identical
+recorded batch prompts and query order at the differing answer. Within one
+run, a successful terminal checkpoint supplies its saved prediction; the
+sampled main trajectories contained no repeated complete terminal.
+The quality-regret theorem assumes a fixed evaluator table, whereas these
+empirical comparisons retain observed variation between fresh executions.
+After the initial stage, an observer-copy repair and a retrieval-service
+memory reservation optimization were deployed with separate provenance.
+Fixed-request checks preserved rankings and token charges, without establishing
+global bitwise equivalence across fresh runs.
+
+The implementation must pass evidence-order, query-history, stopping,
+checkpoint-restoration, physical-price update and recovery regressions.
+Model-attempt records retain checkpoint, prompt, output, input/output
+tokens and available timing/failure metadata. Semantic role labels were absent
+from the original receipts, as noted above. Candidate traces retain raw backup statistics,
+probabilities, current cost forecasts and selected actions. Search and tiny
+queues perform no trace-reconstruction audit. Offline audits check saved
+candidate arithmetic, backup, predictions, checkpoints and bills directly;
+they do not rerun search, random draws, historical forecasts or generation.
+Prediction calibration requires separate evidence. The runtime journal persists
+physical receipts and completed items; the post-hoc accounting path does not
+scan all earlier response bodies before a component call. Four query workers
+process fixed consecutive QID groups inside one candidate. Before each model
+dispatch, every unfinished group member either requests generation or finishes;
+requests with equal output limits are batched in stable QID order. Cached or
+failed items leave the group explicitly, and all submitted work drains before
+an error propagates. Provider observers and receipts are per-query; retrieval
+cache reset and ranking are atomic. All 150 training items settle before
+scoring, price updates and the next search decision.
+Call elapsed times may include component queueing; queue time and component
+execution time are separately recorded, and their sums are not wall-clock time. Top-$m$ selection precedes
+CPU ordering; ordering preserves selected text, and the final answer stage
+generates the workflow's answer.
+
+Runtime diagnostics count each physical generation batch once, using its
+session and batch identifiers. Padding efficiency is the ratio of actual
+tokens to padded tensor positions, reported separately for inputs and outputs.
+Batch timings from a recent receipt window diagnose execution overhead;
+end-to-end speed comparisons require completed, matched workloads.
+
+New and resumed follow-up RAG runs reuse the native checkpoint already read
+when a new prefix completes, removing a second checkpoint read and graph
+compilation. Cache hits and process recovery still read durable checkpoints.
+The saved runtime record identifies the implementation used for each launch;
+search settings, fixed batches, checkpoints and actual bills are preserved.
+
+Earlier multi-round runs remain archived diagnostics. Independent calibration
+of that source pool used 34 fixed paths on three separate questions, producing
+102 evaluations, 933 component receipts and 383 Qwen generation attempts.
+The shared calibration bill was 1,171,878.42 weighted-token units:
+1,165,642.43 for execution and 6,235.99 for index preparation. Its recorded
+425.44 seconds include preparation and output persistence and exclude model
+loading. The main grammar retains the
+corresponding query/retrieval/reranking forecasts and transfers the former
+width-conditioned answer prices to explicit final-answer edges. Removed
+compression actions receive no mass in the new completion law. These transferred
+price priors and the common numeric scale remain fixed across methods and tiny;
+they are not calibrated error bounds. Main-runtime acceptance additionally
+checks the complete one-tree, raw-backup, cache and Top-5 protocol, as well as
+complete token/time records on the new trajectories.
+The frozen parser accepts a singular \texttt{citation} key as an alias for
+\texttt{citations} and closes one missing final object brace only when the
+result is otherwise valid JSON. It still validates citation identifiers and
+rejects unfinished strings or arrays. Raw output and each normalization are
+retained. The revised calibration has no query fallback.
+
+\subsection{Exploratory dynamic AFlow pilot}
+The completed GSM8K pilot uses LLM-generated Python edits. Two arms pair seed 11: a bounded adaptation of AFlow's
+original allocator and a dynamic-edit adaptation of AgentUCT. Both use
+Qwen3.5-4B, the upstream proposal template with its XML output contract,
+the actual operator interfaces and the official scorer. Each workflow is
+evaluated on eight training questions before a tree update. The two best
+distinct training workflows enter an eight-question validation panel; its
+winner is measured on 24 primary questions, excluding one separate sentinel.
+The panels are disjoint, but were previously sampled for development.
+
+The single reporting budget is 100k raw input-plus-output tokens, with caps
+of 32 complete workflows and 32 proposal rounds, each allowing up to three
+proposal or repair attempts. Complete evaluations can cross the budget;
+the reported snapshot is the last affordable complete state. The full bill
+retains that crossing, proposals, repairs, validation and paid failures.
+Test costs are separate. The diagnostic utility is
+$J_{\mathrm{pilot}}=F-0.05C_{\mathrm{opt,full}}/8192$.
+The inherited diagnostic scale and $\beta=2$ are not independently calibrated;
+this utility is not pooled with RAG's parameter-weighted-token utility.
+
+AFlow samples eligible top-four parents with probabilities
+$0.3/K+0.7\,\mathrm{softmax}(20s)_i$. AgentUCT uses progressive widening,
+raw descendant-return backup and a prequential estimate of complete edit
+cost from earlier completed training proposals, repairs and executions.
+The widening limit is $\min(8,\max(1,\lceil\sqrt{N}\rceil))$, with maximum
+edit depth 12, exploration coefficient 1.4 and no rollout. Proposals use
+temperature 0.7 and top-$p=0.9$; execution is greedy. The context cap is 8192
+tokens, with output caps of 2048 for proposals and 1024 for execution.
+Each question--workflow execution permits ten model-request slots, counting
+retries and cache replays. Each formatted-model invocation permits up to three
+format attempts within that limit; an operator can make several such invocations.
+A 600-second deadline is checked between requests. An in-flight synchronous
+model call settles before timeout handling, so this is not a hard wall-time cap.
+Completed pilot receipts cover 276 physical calls and 251 native WTB result
+checkpoints. A generated Programmer workflow executed Python on all eight
+training questions. Neither arm recorded a model-response cache hit, so this
+pilot does not measure reuse gains. Both selected the initial workflow.
+The parent eligibility, single training evaluation, bounded repair,
+feedback and program deduplication differ from upstream AFlow. The comparison
+therefore tests these bounded policy adaptations, not a complete upstream
+reproduction or the cost term alone. Generated code has unknown future demand;
+the estimator supplies no calibrated error bound. The finite-terminal quality
+theorem does not automatically apply to evaluable and expandable programs.
+
+Each arm owns its execution cache and ledger. Python reruns while WTB restores
+saved model responses at matching complete invocation prefixes. Successful
+edits, adaptive selections, actual Programmer execution, failures, the full bill
+and validation-to-test selection have been audited in the completed pilot.
+No prefix cache hits occurred, so the observed run supplies no reuse-benefit evidence.
+
+\subsection{AgentUCT-StaticFull ablation and selection depth}
+\label{sec:static-complete-design}
+AgentUCT-StaticFull is the static complete-cost ablation of AgentUCT.
+It tests whether dynamic adaptation improves on a fixed complete-cost prior. Before its search begins, independent calibration fixes
+the same resource-price priors and caps as AgentUCT, giving prices $\bar w_r$.
+Any estimator overhead $\bar h(p,a)$ is fixed at its pre-search value.
+The continuation law
+$\bar\rho(\cdot\mid p,a)$ is the original estimator's zero-history law:
+each successive legal child is equally likely, which does not generally
+make complete terminals equally likely. The original 16 completion samples
+and smoothing are retained. A private seed--state--action random tape fixes
+the sampled completions without advancing search randomness. The frozen target is
+\[
+ \bar b(p,a)=\mathbb E_{X\sim\bar\rho(\cdot\mid p,a)}
+                 \left[\sum_{r\in\mathcal D(X)}\bar w_r\right]+\bar h(p,a),
+\]
+and is estimated by the fixed mean of 16 sampled completions, using an empty
+workflow-execution cache as the reference. Structural
+zero-cost steps remain free. Shared preparation retains its original separate
+account. Prices, continuation probabilities and the sampled completions for
+each state--action remain fixed; the estimator reads neither live cache
+membership nor later execution observations. Previously unseen states are
+priced lazily from these frozen inputs, without tree enumeration, historical
+reconstruction or consumption of the search random stream.
+
+Execution still restores and extends the actual WTB cache. Raw F1 backup,
+initialization, exploration, rollout, $\beta$, $C_{\rm ref}$, models, panels,
+physical batching and Top5--validation--test selection match AgentUCT. Five
+additional static-control searches use seeds 11, 23, 37, 53 and 71 and report
+the same 16M, 24M and 32M actual-cost cutoffs. Only the price used in selection
+is held static; actual failure, retry and crossing charges remain billed.
+This intervention evaluates dynamic cache conditioning, price learning and
+continuation adaptation jointly. It does not distinguish their individual
+effects. Across all five paired seeds, AgentUCT reaches $69.57\pm0.28\%$
+at both 24M and 32M, compared with $67.36\pm2.67\%$ for AgentUCT-StaticFull.
+The paired difference is $2.21\pm2.89$ percentage points, with a median of
+0.94 points. Seeds 37, 53 and 71 improve by 0.94, 6.76 and 3.35 points;
+seeds 11 and 23 tie. All five 16M endpoints tie. At 32M, each pair retains
+the same evaluation count (Table~\ref{tab:completed-static-full-paired}).
+The selected workflows differ in all three seeds that improve. At 24M,
+seed 53 retains fourteen dynamic evaluations versus thirteen static ones;
+the other pairs have equal counts. The 24M and 32M endpoints repeat within
+every seed and supply the same five paired quality comparisons.
+
+Seeds 11 and 23 select the same configurations under both estimators: C17 at
+every cutoff for seed 11, and C18/C01/C01 for seed 23. In seed 37, the dynamic
+method selects C10 at 24M and 32M; the static method selects query decomposition,
+\texttt{retriever.rrf}, MMR with $\lambda=0.3$, ten retrieved documents, one
+retrieval pass, identity reranking, four documents in ranked order and
+\texttt{answer.generate:m=4}. In seed 53, the static method retains C03 at
+every cutoff, whereas dynamic pricing selects C15 at 24M and 32M.
+Seed 71 selects C05 under both methods at 16M. At 24M and 32M the dynamic
+method selects C19; the static method selects query decomposition, weighted
+BM25--Qwen retrieval with BM25 weight 0.75, MMR with $\lambda=0.3$, ten
+retrieved documents, one retrieval pass, Qwen reranking, two documents in
+ranked order and \texttt{answer.generate:m=2}. The static seed-37 and seed-71
+recipes are written explicitly because they have no identifier in the
+original configuration catalogue.
+
+\begin{table*}[t]
+\centering\small
+\caption{Completed paired seeds for the AgentUCT-StaticFull ablation. Test F1 is
+in percent and is directly compared across methods;
+$N_{\rm dyn}$/$N_{\rm stat}$ count affordable complete evaluations. Both
+methods use the live execution cache; only the selection-cost estimator is
+frozen in AgentUCT-StaticFull. Reused endpoints across cutoffs are correlated
+measurements, not additional independent trials. All five planned paired
+seeds are complete.}
+\label{tab:completed-static-full-paired}
+\input{figures/rag-extended-analysis-20261004/quality/completed-static-full-paired}
+\end{table*}
+
+Table~\ref{tab:static-full-phase-bills} records the complete physical bill for
+each static-control run. Whole crossing evaluations remain charged; the
+amount exceeding 32M is only part of that work. Validation and test columns
+cover the requested cutoff measurements at all three budgets, with complete
+measurements reused when endpoints repeat. Previously paid input preparation
+is referenced separately and is not charged again as new work.
+
+\begin{table*}[t]
+\centering\small\setlength{\tabcolsep}{4pt}
+\caption{AgentUCT-StaticFull phase bills in M weighted-token units. Full search
+includes the entire crossing evaluation; retained cost excludes it from the
+32M snapshot. Overshoot is full search minus 32M. Validation and test include
+the three-cutoff measurement campaign. Paid input preparation is a reference
+to prior physical work, not a new zero-cost preparation claim.}
+\label{tab:static-full-phase-bills}
+\input{figures/rag-extended-analysis-20261004/quality/static-full-phase-bills}
+\end{table*}
+
+The implementation retains the original zero-history sampling tape and
+prices the entire root-to-terminal evaluation, including its selected tree
+prefix, against the empty cache. Static observation hooks skip receipt-based
+price and transition updates; the execution ledger still records every actual
+call. A separate run namespace preserves the original dynamic-control results.
+
+The saved RAG evidence in Table~\ref{tab:initialization-paired-evidence}
+connects initialization cost, first complete adaptive feedback, cost-induced
+selection changes and paired endpoint effects. In the diagnostic GSM8K
+seed-11 trace, completion pricing also changed a decision below the root.
+Through nineteen completed AgentUCT training panels, twenty-one recorded
+traversal decisions included eight below the root, two at selection-state
+depth two. The cost term changed seventeen choices overall, including five
+below the root. MCTS-UCT completed nineteen panels and recorded seventeen
+traversal decisions, four below the root. These traces establish recursive
+allocation, without establishing an endpoint-quality benefit.
+
+Search in this execution cohort terminated before its first reporting budget.
+Repeated per-question errors inflated the proposal history beyond the fixed
+6,144-token input allowance; repeated context rejections then exhausted the
+256-proposal limit. AFlow, MCTS-UCT and AgentUCT completed 20, 19 and 19 training
+panels at 4.504M, 5.891M and 5.818M raw search tokens, respectively, all below
+6.423M. These runs are diagnostic evidence, not completed target-budget trials.
+A separate common cohort encodes identical errors and consecutive identical
+unevaluated failures with their occurrence counts. It retains every distinct
+error and evaluated sibling, the complete task and parent program, and the
+original context limit, model, data, budgets and allocation rules. This change
+alters proposal inputs and therefore requires fresh runs for all three methods;
+old and new measurements are not pooled.
+
+The replacement seed-11 cohort recorded recursive allocation through deeper
+selection states. The full AgentUCT search, including its crossing evaluation,
+completed 92 training panels and recorded 210 traversal decisions, including
+127 below the root, reaching selection-state depth four. Completion pricing
+changed 185 decisions, including 107 below the root. The retained 19.122M
+snapshot ended at iteration 90: its 91 panels contained 207 traversal
+decisions, 125 below the root, with 182 cost-induced changes, 105 below the
+root. The full MCTS-UCT search completed 60 panels and recorded 79 traversal
+decisions, 28 below the root, reaching selection-state depth one. Its 19.122M
+snapshot ended at iteration 58 and contained 77 traversal decisions,
+27 below the root. All MCTS-UCT choices matched the cost-free index.
+AFlow completed 89 panels. Generated-program errors remained scored and billed.
+
+At the 19.122M budget, AgentUCT answered one more test question correctly
+than MCTS-UCT in seed 11 (279 versus 278 of 300), a difference of one-third
+of a percentage point (Table~\ref{tab:gsm-counted-seed11}). AFlow scored
+95\%, two percentage points above AgentUCT's 93\%, and was highest in this
+seed. This single paired seed does not establish across-seed performance
+or a quality benefit from deeper allocation.
+AgentUCT, MCTS-UCT and AFlow used nine, seven and eight distinct validation
+measurements, respectively, and two distinct test measurements each.
+AgentUCT's first two budgets selected node 11 and reused the same test.
+The last two budgets for MCTS-UCT and AFlow likewise reused tests of
+nodes 34 and 36, respectively. These repeated endpoints are not independent
+replicates.
+
+\begin{table}[t]
+\centering\small
+\caption{Completed GSM8K results for seed 11 in the replacement cohort.
+Each row retains the last complete search checkpoint within budget; $N$
+counts 150-question training panels. Correct answers and test accuracy use
+300 primary questions after Top5$\to$validation selection. Costs are millions
+of raw tokens. These measurements cover one paired seed.}
+\label{tab:gsm-counted-seed11}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Method & Budget (M) & $N$ & Retained (M) & Correct / 300 & Test acc. (\%)\\
+\midrule
+AgentUCT & 6.423 & 33 & 6.378792 & 278 & 92.67\\
+AgentUCT & 12.772 & 60 & 12.402108 & 278 & 92.67\\
+AgentUCT & 19.122 & 91 & 18.863808 & 279 & 93.00\\
+\midrule
+MCTS-UCT & 6.423 & 30 & 5.982823 & 279 & 93.00\\
+MCTS-UCT & 12.772 & 51 & 12.112399 & 278 & 92.67\\
+MCTS-UCT & 19.122 & 59 & 18.513759 & 278 & 92.67\\
+\midrule
+AFlow & 6.423 & 24 & 5.994099 & 279 & 93.00\\
+AFlow & 12.772 & 56 & 12.550687 & 285 & 95.00\\
+AFlow & 19.122 & 88 & 19.120109 & 285 & 95.00\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The complete MCTS-UCT bill was 25.474833M raw tokens: 20.704149M for search,
+3.772249M for validation and 0.998435M for testing. Its search bill included
+0.208821M for proposals and 0.131491M for repairs.
+The complete AgentUCT bill was 23.647388M: 19.432714M for search,
+3.216239M for validation and 0.998435M for testing. Its search bill included
+0.305519M for proposals and 0.240910M for repairs. The complete AFlow bill
+was 24.428076M: 19.297776M for search, 3.333025M for validation and 1.797275M
+for testing, with 0.317823M for proposals and 0.212644M for repairs included
+in search. At the largest budget, the final search increments through
+complete evaluations cost 2.190390M for MCTS-UCT, 0.568906M for AgentUCT
+and 0.177667M for AFlow. Their respective search-budget overshoots were
+1.582149M, 0.310714M and 0.175776M.
+These full increments remain billed; their rewards and states are excluded
+from the affordable snapshots.
+
+For seed 53, AgentUCT selected node 17 at all three reporting budgets
+and obtained 277/300 correct answers (Table~\ref{tab:gsm-counted-aflow-seed53}).
+The repeated endpoint reuses one complete test measurement. AFlow selected
+nodes 5, 10 and 43 with separate test measurements; its accuracy decreased
+from 93\% to 92\% as the budget increased. The complete matched MCTS-UCT and five-seed results are reported in
+Table~\ref{tab:gsm-counted-all-five-seed}.
+
+\begin{table}[t]
+\centering\small
+\caption{Completed AgentUCT and AFlow GSM8K results for seed 53 in the
+replacement cohort. Each budget uses its last affordable complete checkpoint
+and Top5$\to$validation selection. $N$ counts 150-question training panels;
+accuracy uses the same 300 primary test questions. Costs are M raw tokens.
+The three AgentUCT rows reuse one test measurement.}
+\label{tab:gsm-counted-aflow-seed53}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Method & Budget (M) & $N$ & Retained (M) & Correct / 300 & Test acc. (\%)\\
+\midrule
+AgentUCT & 6.423 & 24 & 6.274982 & 277 & 92.33\\
+AgentUCT & 12.772 & 48 & 12.674662 & 277 & 92.33\\
+AgentUCT & 19.122 & 99 & 18.640472 & 277 & 92.33\\
+AFlow & 6.423 & 18 & 6.155695 & 279 & 93.00\\
+AFlow & 12.772 & 35 & 12.543798 & 277 & 92.33\\
+AFlow & 19.122 & 48 & 19.011865 & 276 & 92.00\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The complete seed-53 AgentUCT search evaluated 100 training panels and used
+10 distinct validation panels and one test measurement. Its 23.929074M
+raw-token bill comprised 19.252406M for search, 4.307082M for validation
+and 0.369586M for testing. All 39,624 physical calls were settled, with no
+physical call failures; 2,461 question executions with candidate-program
+errors remained scored and billed. The last complete crossing evaluation
+cost 0.611934M, whereas the search-budget overshoot was 0.130406M.
+The crossing charges remain in the full bill, and future rewards and states
+are excluded from earlier affordable snapshots.
+
+The complete seed-53 AFlow search evaluated 49 training panels and used
+11 distinct validation and three test measurements. Its 27.464199M raw-token
+bill comprised 19.799962M for search, 5.391294M for validation and 2.272943M
+for testing. Search included 0.232454M for proposals and 0.316211M for
+repairs. All 29,115 physical calls were settled, including three failed
+calls; 877 question executions with candidate-program errors remained
+scored and billed. The last complete crossing evaluation cost 0.788097M,
+whereas the amount above the 19.122M budget was 0.677962M. The former
+remains in the full bill and is excluded from the retained snapshot.
+
+The completed AFlow runs for seeds 23 and 71 improved from the first
+to the second reporting budget, then reused their selected workflows at
+the largest budget (Table~\ref{tab:gsm-counted-aflow-seeds23-71}).
+Seed 23 selected nodes 18, 67 and 67; seed 71 selected nodes 0, 40 and 40.
+For each seed, the last two budgets therefore share one complete test
+measurement. All budgets use the same 300 primary questions, so these
+measurements provide correlated endpoints. The complete AgentUCT and MCTS-UCT cohorts are included in
+Table~\ref{tab:gsm-counted-all-five-seed}; the seed-23 comparison follows below.
+
+\begin{table}[t]
+\centering\small
+\caption{Completed AFlow GSM8K results for seeds 23 and 71 in the
+replacement cohort. Budgets retain the last affordable complete checkpoint
+and use Top5$\to$validation selection. $N$ counts complete 150-question
+training panels; accuracy uses 300 primary test questions. Costs are M raw
+tokens. Each seed's last two rows reuse one test measurement.}
+\label{tab:gsm-counted-aflow-seeds23-71}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}rrrrrr@{}}
+\toprule
+Seed & Budget (M) & $N$ & Retained (M) & Correct / 300 & Test acc. (\%)\\
+\midrule
+23 & 6.423 & 43 & 6.366318 & 265 & 88.33\\
+23 & 12.772 & 77 & 12.478360 & 278 & 92.67\\
+23 & 19.122 & 104 & 18.579361 & 278 & 92.67\\
+71 & 6.423 & 24 & 6.314414 & 274 & 91.33\\
+71 & 12.772 & 41 & 12.520418 & 275 & 91.67\\
+71 & 19.122 & 66 & 18.914536 & 275 & 91.67\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The full seed-23 bill was 24.803149M raw tokens: 19.610508M for search,
+3.514002M for validation and 1.678639M for testing. Search included
+0.555961M for proposals and 0.557993M for repairs. Its 105 training panels,
+10 distinct validation panels and two test measurements contained 19,352
+official question scores. All 25,171 physical calls were settled, including
+five failed calls; 1,577 question executions with candidate-program errors
+remained scored and billed. The last complete crossing evaluation cost
+1.031147M, with a search-budget overshoot of 0.488508M.
+
+For seed 71, the corresponding full bill was 25.375785M: 19.515219M for
+search, 5.260455M for validation and 0.600111M for testing. Search included
+0.283484M for proposals and 0.212275M for repairs. Its 67 training panels,
+12 distinct validation panels and two test measurements contained 14,252
+official question scores. All 26,705 physical calls were settled, including
+129 failed calls; 1,047 question executions with candidate-program errors
+remained scored and billed. The final complete crossing cost 0.600683M,
+with a search-budget overshoot of 0.393219M. Both runs retain these crossing
+charges in their full bills and exclude future rewards and states from
+earlier affordable snapshots.
+
+AgentUCT and MCTS-UCT seed 23 each reused one selected workflow across
+all three budgets (Table~\ref{tab:gsm-counted-agentuct-seed23}). AgentUCT
+selected node 18 and answered 286/300 questions correctly (95.33\%);
+MCTS-UCT selected node 13 and answered 282/300 (94.00\%). The completed
+AFlow seed-23 accuracies were 88.33\%, 92.67\% and 92.67\% at the respective
+budgets. These results describe one matched three-method seed; repeated
+budget endpoints are correlated. The full five-seed comparison is reported
+in Table~\ref{tab:gsm-counted-all-five-seed}.
+
+\begin{table}[t]
+\centering\small
+\caption{Completed AgentUCT and MCTS-UCT GSM8K seed 23. Each budget retains
+the last affordable complete checkpoint and uses Top5$\to$validation selection.
+$N$ counts 150-question training panels; accuracy uses the same 300 primary
+test questions. AgentUCT reuses node 18's one test measurement, and MCTS-UCT
+reuses node 13's one test measurement. Costs are M raw tokens.}
+\label{tab:gsm-counted-agentuct-seed23}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Method & Budget (M) & $N$ & Retained (M) & Correct / 300 & Test acc. (\%)\\
+\midrule
+AgentUCT & 6.423 & 34 & 6.303265 & 286 & 95.33\\
+AgentUCT & 12.772 & 78 & 12.752482 & 286 & 95.33\\
+AgentUCT & 19.122 & 123 & 18.919751 & 286 & 95.33\\
+MCTS-UCT & 6.423 & 36 & 6.401393 & 282 & 94.00\\
+MCTS-UCT & 12.772 & 72 & 11.131243 & 282 & 94.00\\
+MCTS-UCT & 19.122 & 95 & 18.979224 & 282 & 94.00\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The full seed-23 AgentUCT bill was 23.894398M raw tokens: 19.231072M
+for search, 4.033069M for validation and 0.630257M for testing. Search
+included 0.452297M for proposals and 0.417624M for repairs. Its 124
+training panels, eight distinct validation panels and one test measurement
+retained all 32,151 settled physical calls, with no physical call failures;
+2,190 question executions with candidate-program errors remained scored
+and billed. The last complete crossing evaluation cost 0.311321M,
+whereas the search-budget overshoot was 0.109072M. The full bill retains
+crossing charges, and earlier snapshots exclude future rewards and states.
+The original preparation remains separate.
+
+% Sources: gsm-counted-uct-seed23-completion-audit.json and
+% gsm-counted-uct-seed23-independent-review-20261007.json.
+The full seed-23 MCTS-UCT bill was 22.407630M raw tokens: 19.348587M
+for search, 2.195358M for validation and 0.863685M for testing. Search
+included 18.776162M for workflow execution, 0.313854M for proposals and
+0.258571M for repairs. Its 96 training panels, five distinct validation
+panels and one test measurement covered 16,201 question executions,
+including one diagnostic test sentinel excluded from primary accuracy.
+All 24,844 physical calls settled, including three failed calls; 2,083
+question executions with workflow errors remained scored and billed.
+The last complete crossing evaluation cost 0.369363M, whereas the
+search-budget overshoot was 0.226587M. The complete crossing charge
+remains in the full bill; earlier affordable snapshots exclude future
+rewards and states. The
+shared preparation of 0.109983M raw tokens remains separate.
+
+For seed 37, AgentUCT obtained 281, 280 and 280 correct answers across
+the three budgets, whereas AFlow obtained 277, 279 and 282
+(Table~\ref{tab:gsm-counted-seed37}). AgentUCT reused node 75 at the last
+two budgets; AFlow selected nodes 50, 96 and 125 with distinct test
+measurements. The ranking therefore changed with budget in this seed.
+The matched MCTS-UCT results appear in the complete five-seed comparison
+(Table~\ref{tab:gsm-counted-all-five-seed}).
+
+\begin{table}[t]
+\centering\small
+\caption{Completed AgentUCT and AFlow GSM8K results for seed 37 in the
+replacement cohort. Each budget uses the last affordable complete checkpoint
+and Top5$\to$validation selection. $N$ counts 150-question training panels;
+accuracy uses the same 300 primary test questions. Costs are M raw tokens.
+The last two AgentUCT rows reuse one test measurement.}
+\label{tab:gsm-counted-seed37}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Method & Budget (M) & $N$ & Retained (M) & Correct / 300 & Test acc. (\%)\\
+\midrule
+AgentUCT & 6.423 & 50 & 6.388173 & 281 & 93.67\\
+AgentUCT & 12.772 & 76 & 12.763173 & 280 & 93.33\\
+AgentUCT & 19.122 & 116 & 18.959821 & 280 & 93.33\\
+AFlow & 6.423 & 52 & 6.362538 & 277 & 92.33\\
+AFlow & 12.772 & 98 & 12.732002 & 279 & 93.00\\
+AFlow & 19.122 & 159 & 19.102452 & 282 & 94.00\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The full seed-37 AgentUCT bill was 20.506717M raw tokens: 19.216682M
+for search, 0.905446M for validation and 0.384589M for testing. Search
+included 0.440943M for proposals and 0.399368M for repairs. Its 117
+training panels, seven distinct validation panels and two test measurements
+retained all 22,142 settled physical calls, with no physical call failures;
+3,019 question executions with candidate-program errors remained scored
+and billed. The last complete crossing evaluation cost 0.256861M,
+whereas the search-budget overshoot was 0.094682M.
+
+For AFlow seed 37, the full bill was 20.307432M: 19.123214M for search,
+0.701023M for validation and 0.483195M for testing. Search included
+0.804010M for proposals and 0.629095M for repairs. Its 160 training panels,
+ten distinct validation panels and three test measurements retained all
+26,204 settled physical calls, including four failed calls; 2,312 question
+executions with candidate-program errors remained scored and billed.
+The last complete crossing evaluation cost 0.020762M, whereas the
+overshoot was 0.001214M. Both runs preserve these crossing charges in
+their full bills and exclude future rewards and states from earlier
+affordable snapshots. The original 109,983-token preparation remains
+separate; neither run required new preparation or calibration.
+
+Saved AgentUCT seed-37 traversals contain 294 parent-state choices,
+186 below the root; completion pricing changes 253 choices, including
+148 below the root. At the largest affordable snapshot, the corresponding
+counts are 290, 183, 250 and 146. The remaining four choices belong to
+the crossing evaluation and are excluded from that snapshot. The highest
+saved parent depth is four in both scopes. These are recorded allocation
+decisions, not program depth or a causal estimate of their quality benefit.
+
+The AFlow arm is now complete for all five seeds
+(Table~\ref{tab:gsm-counted-aflow-five-seed}). Mean accuracy rises from
+$91.60\pm1.95\%$ to $93.07\pm1.40\%$ across the reporting budgets,
+with a decrease for seed 53 and repeated selected endpoints in seeds 11,
+23 and 71. These are within-method observations. The complete matched AgentUCT and MCTS-UCT cohorts are reported in
+Table~\ref{tab:gsm-counted-all-five-seed}.
+
+\begin{table}[t]
+\centering\small
+\caption{Complete AFlow GSM8K arm: original test accuracy (\%) for each
+seed and mean $\pm$ sample SD across five seeds. Budget columns are M raw
+search tokens and use Top5$\to$validation selection. All rows use the same
+300 primary test questions; budgets are correlated and can reuse an endpoint.}
+\label{tab:gsm-counted-aflow-five-seed}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Seed & 6.423M & 12.772M & 19.122M\\
+\midrule
+11 & 93.00 & 95.00 & 95.00\\
+23 & 88.33 & 92.67 & 92.67\\
+37 & 92.33 & 93.00 & 94.00\\
+53 & 93.00 & 92.33 & 92.00\\
+71 & 91.33 & 91.67 & 91.67\\
+Mean $\pm$ sample SD & $91.60\pm1.95$ & $92.93\pm1.26$ & $93.07\pm1.40$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:gsm-nonroot-choice} shows the cost-induced depth-one decision.
+At parent node 5, the quality-plus-exploration index favoured node 7.
+Its estimated complete edit-and-evaluation cost was 1.382M raw tokens, compared with
+0.249M for node 6, so AgentUCT selected node 6 as the next edit's input.
+The resulting new program, node 9, scored zero on its complete 150-question
+training panel. The trace therefore establishes that completion pricing
+affected recursive allocation; it supplies no quality-gain evidence for this
+particular choice. Candidate statistics are taken from the contemporaneous
+saved traversal. Selection-state depth follows saved parent links and is
+distinct from the depth of the generated program.
+
+\begin{table}[t]
+\centering
+\caption{A saved depth-one AgentUCT decision in the diagnostic GSM8K
+seed-11 run, edit 9. Both candidates are children of node 5. The cost-free
+index selects node 7; subtracting $2\widehat b/C_{\rm ref}$ selects node 6,
+with $C_{\rm ref}=150{,}954.5$ raw tokens. The edited child subsequently scored
+zero on the training panel; no endpoint-quality claim follows from this case.}
+\label{tab:gsm-nonroot-choice}
+\small
+\begin{tabular}{lrrrrrr}
+\toprule
+Node & $N$ & $Q$ & Bonus & $Q+\mathrm{bonus}$ & Est. cost (M) & Net index\\
+\midrule
+6 (selected) & 2 & 0.3067 & 1.2559 & 1.5626 & 0.2494 & $-1.7424$\\
+7 & 1 & 0.2533 & 1.7761 & 2.0294 & 1.3822 & $-16.2831$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Complete five-seed generated-workflow comparison}
+\label{sec:gsm-five-seed-complete}
+Completion pricing produced a modest mean quality advantage over MCTS-UCT
+in the frozen GSM8K AFlow system (Table~\ref{tab:gsm-counted-all-five-seed}).
+At 19.122M raw search tokens, AgentUCT reached $93.07\pm1.48\%$,
+compared with $92.67\pm0.78\%$ for MCTS-UCT and
+$93.07\pm1.40\%$ for AFlow. AgentUCT exceeded MCTS-UCT
+in seeds 11, 23 and 37, tied it in seed 53, and scored lower in seed 71.
+AgentUCT and AFlow had the same largest-budget mean, despite different
+seed outcomes. All three frozen budgets and all five seeds are retained;
+this is a task-specific allocation comparison, not a universal ordering.
+AgentUCT seed 71 selected its initial node 0 at all three budgets, reusing
+one test measurement. Recorded recursive allocation changes elsewhere do not
+attribute an endpoint gain to this unchanged selection.
+The primary denominator is 300 test questions per endpoint; the diagnostic
+sentinel is excluded. The shared Qwen3.5-4B, fixed-eight execution groups,
+counted-error proposal history, complete 150-question training joins and
+Top5-to-validation selection are unchanged.
+
+\begin{table}[t]
+\centering\small
+\caption{Complete GSM8K comparison across 5 paired search seeds. Test accuracy (\%) is reported directly for every seed and all frozen raw-token budgets. Mean $\pm$ sample SD equally weights seeds; SD is not a confidence interval. The same test questions and repeated selected endpoints make budget columns correlated.}
+\label{tab:gsm-counted-all-five-seed}
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+Method & Seed & 6.423M & 12.772M & 19.122M\\
+\midrule
+AgentUCT & 11 & 92.67 & 92.67 & 93.00\\
+AgentUCT & 23 & 95.33 & 95.33 & 95.33\\
+AgentUCT & 37 & 93.67 & 93.33 & 93.33\\
+AgentUCT & 53 & 92.33 & 92.33 & 92.33\\
+AgentUCT & 71 & 91.33 & 91.33 & 91.33\\
+AgentUCT & Mean $\pm$ SD & $93.07\pm1.52$ & $93.00\pm1.49$ & $93.07\pm1.48$\\
+\midrule
+MCTS-UCT & 11 & 93.00 & 92.67 & 92.67\\
+MCTS-UCT & 23 & 94.00 & 94.00 & 94.00\\
+MCTS-UCT & 37 & 91.33 & 92.33 & 92.33\\
+MCTS-UCT & 53 & 93.00 & 92.33 & 92.33\\
+MCTS-UCT & 71 & 91.67 & 91.67 & 92.00\\
+MCTS-UCT & Mean $\pm$ SD & $92.60\pm1.09$ & $92.60\pm0.86$ & $92.67\pm0.78$\\
+\midrule
+AFlow & 11 & 93.00 & 95.00 & 95.00\\
+AFlow & 23 & 88.33 & 92.67 & 92.67\\
+AFlow & 37 & 92.33 & 93.00 & 94.00\\
+AFlow & 53 & 93.00 & 92.33 & 92.00\\
+AFlow & 71 & 91.33 & 91.67 & 91.67\\
+AFlow & Mean $\pm$ SD & $91.60\pm1.95$ & $92.93\pm1.26$ & $93.07\pm1.40$\\
+\bottomrule
+\end{tabular}
+\end{table}
+\begin{table}[t]
+\centering\footnotesize
+\setlength{\tabcolsep}{3pt}
+\caption{Actual bills and failures for the four newly completed GSM8K units. All costs are M raw tokens. Search includes execution, proposer and repair calls. Full formal totals include all crossing evaluations, validation, testing and failures; shared preparation or calibration is separate. Overshoot is already contained in search, not an additional charge.}
+\label{tab:core-new-unit-bills}
+\begin{tabular}{@{}llrrrrrr@{}}
+\toprule
+Task & Method / seed & Search & Valid. & Test & Formal & Calls & Failed\\
+\midrule
+GSM8K & AgentUCT / 71 & 19.358143 & 7.312719 & 0.149341 & 26.820203 & 25794 & 0\\
+GSM8K & MCTS-UCT / 37 & 20.092556 & 1.927642 & 0.403501 & 22.423699 & 27746 & 0\\
+GSM8K & MCTS-UCT / 53 & 19.415722 & 2.541933 & 1.134356 & 23.092011 & 36146 & 0\\
+GSM8K & MCTS-UCT / 71 & 19.168017 & 2.252405 & 0.501162 & 21.921584 & 25427 & 0\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For the newly completed GSM8K units, the complete training, distinct validation
+and test panel counts were AgentUCT seed 71 (52/11/1), MCTS-UCT seed 37 (98/8/2), MCTS-UCT seed 53 (93/9/2), MCTS-UCT seed 71 (72/7/2).
+Every physical call settled. Workflow errors remained scored and billed:
+AgentUCT seed 71 (1,371 question executions), MCTS-UCT seed 37 (3,181 question executions), MCTS-UCT seed 53 (2,158 question executions), MCTS-UCT seed 71 (978 question executions).
+The largest-budget complete crossing and overshoot amounts, respectively,
+were AgentUCT seed 71 (0.267421M/0.236143M), MCTS-UCT seed 37 (1.227992M/0.970556M), MCTS-UCT seed 53 (0.777511M/0.293722M), MCTS-UCT seed 71 (0.100444M/0.046017M).
+The overshoot is a subset of the billed crossing work. Last affordable
+complete snapshots exclude its future rewards and states. Shared preparation
+remains 0.109983M raw tokens.
+
+\ifdefined\AgentUCTReading\else\clearpage\fi
+\subsection{Complete training-Top1 measurements}
+\label{sec:top1-complete}
+The no-validation ablation covers all sixty method--seed--budget cells.
+For each completed affordable search prefix, the highest training mean F1
+selects the endpoint, with the earliest evaluation breaking ties. Its paired
+selection effect is
+\[
+ \Delta_{s,B}^{\mathrm{selection}}
+ =F^{\mathrm{train\ Top1}}_{s,B}-F^{\mathrm{Top5\to validation}}_{s,B}.
+\]
+Forty-nine cells reuse complete tests of the exact workflow from the same
+original run. Eight additional method--seed workflow measurements, involving
+four distinct configurations, supply the remaining eleven cells. They require
+2,400 primary question--workflow executions and eight sentinels. Each
+prediction was rescored with the official evaluator and bound to its saved
+execution and terminal receipt. The new measurements contain 21,680 settled
+component/preparation records and 5,791 generation attempts, costing 29.722M
+weighted-token units in the separate ablation-test account. They add no search
+observations and do not change historical snapshots.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/top1-ablation-20261004/top1-paired-differences.pdf}
+\caption{Complete effect of skipping validation. Positive paired test-F1
+changes favor training Top1. Small symbols retain each seed; the lower filled
+diamond and horizontal bar show mean $\pm$ sample SD across five seeds.
+Both rules use the same search prefix. Repeated budgets can reuse endpoints
+and are not independent replicates.}
+\label{fig:top1-ablation-all}
+\end{figure*}
+
+\begin{table*}[t]
+\centering\small
+\caption{Complete selection ablation. Test F1 is in percent; paired
+$\Delta$ is in percentage points, positive for training Top1. Scores and
+differences are mean $\pm$ sample SD across five matched seeds. Win/tie/loss
+compares endpoint-selection rules within a seed.}
+\label{tab:top1-results}
+\input{figures/top1-ablation-20261004/top1-results-table}
+\end{table*}
+
+At 16M, skipping validation raises all four method means by 0.22 percentage
+points, entirely from seed 53. At 32M it lowers AgentUCT by 0.32 points,
+MCTS-UCT by 0.64 points and MCTS-Random by 0.42 points, while raising AgentUCT-NextC by
+0.68 points. Across the sixty correlated cells, seven improve and nine
+decline; the other 44 select the same workflow under both rules. AgentUCT
+retains the highest mean at 24M and 32M under either rule. Other method
+rankings change: AgentUCT-NextC overtakes MCTS-Random at 32M and both MCTS-UCT and MCTS-Random
+tree at 24M. These changes are descriptive; no test outcome changes the
+primary Top5--validation protocol. Omitting validation avoids its physical
+bill, while the extra test measurements remain a separate research expense.
+
+\input{paper/operational_optimizer_adapters}

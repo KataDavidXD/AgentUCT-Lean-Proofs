@@ -1,0 +1,19 @@
+import AgentUCTPaper.DynamicCompletion
+import AgentUCTPaper.ReachableDemandSeparation
+#print axioms AgentUCTPaper.dynamic_spend_union
+#print axioms AgentUCTPaper.zero_weight_padding
+#print axioms AgentUCTPaper.dynamic_spend_with_overhead
+#print axioms AgentUCTPaper.generated_completion_two_stage
+#print axioms AgentUCTPaper.dynamic_optimistic_net_loss
+#print axioms AgentUCTPaper.dynamic_optimistic_cumulative
+#print axioms AgentUCTPaper.fresh_dynamic_resource_cost
+#print axioms AgentUCTPaper.recurring_omitted_suffix
+#print axioms AgentUCTPaper.ReachablePairs.reachable_from_empty
+#print axioms AgentUCTPaper.ReachablePairs.equal_warmup_cost
+#print axioms AgentUCTPaper.ReachablePairs.equal_full_panel_residuals
+#print axioms AgentUCTPaper.ReachablePairs.active_pair_ranking_reverses
+#print axioms AgentUCTPaper.ReachablePairs.affordable_action_reverses
+#print axioms AgentUCTPaper.cold_prediction_envelope
+#print axioms AgentUCTPaper.checkpoint_zero_prediction_envelope
+#print axioms AgentUCTPaper.completion_prediction_envelope
+#print axioms AgentUCTPaper.checkpoint_conditioned_shared_root_log_bound

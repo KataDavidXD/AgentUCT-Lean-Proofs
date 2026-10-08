@@ -1,0 +1,17 @@
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Method & 16M F1 & 24M F1 & 32M F1 & $N_{32}$ & Retained cost (M)\\
+\midrule
+AgentUCT & 69.51 & 69.51 & 69.51 & 18 & 31.910\\
+MCTS-UCT & 69.44 & 69.44 & 69.44 & 18 & 31.803\\
+AgentUCT-NextC & 69.51 & 69.51 & 69.51 & 18 & 31.969\\
+MCTS-Random & 69.51 & 69.35 & 69.35 & 18 & 31.168\\
+AFlow--RAG & 66.25 & 65.76 & 68.27 & 19 & 30.195\\
+FLASH*--RAG (TPE) & 67.79 & 66.55 & 66.55 & 19 & 31.761\\
+EEIPU--RAG & 67.95 & 67.95 & 67.26 & 17 & 29.469\\
+Uniform-terminal search & 66.76 & 66.76 & 69.33 & 18 & 30.749\\
+AgentUCT-StaticFull & 69.51 & 69.51 & 69.51 & 18 & 31.982\\
+LaMBO--RAG & 65.18 & 64.60 & 65.63 & 37 & 31.112\\
+MSBO--RAG & 67.82 & 68.59 & 68.59 & 14 & 29.855\\
+\bottomrule
+\end{tabular}

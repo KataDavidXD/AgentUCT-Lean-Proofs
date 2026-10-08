@@ -1,0 +1,17 @@
+CHECKPOINT-01: the resource ledger and deepest restorable suffix agree when prefixes persist.
+
+Define the deepest checkpoint by maximizing saved stage indices for the queried
+qid and full path, including index zero for the uncached root. Prove existence,
+membership, maximality, and the path-length bound directly from this definition.
+
+For arbitrary sparse caches, only stages beyond this checkpoint are executed;
+do not replace this suffix by independently testing every ancestor object.
+Under prefix completeness (every nonempty prefix of a saved checkpoint is also
+saved), prove that a stage is missing iff its index is greater than the deepest
+checkpoint. Then prove exact equality between the qid-prefix set-difference
+bill and the suffix sum, using injectivity of nonempty path prefixes by length.
+
+Prove prefix completeness is preserved by the full successful materialization
+transition in EXECUTION-01. Thus K=M is a derived valid invariant in that main
+model, rather than an assumption hidden in the cost identity. Sparse warm starts
+need their own covered-prefix initial ledger or the explicit suffix semantics.

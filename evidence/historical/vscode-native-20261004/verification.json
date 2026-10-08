@@ -1,0 +1,166 @@
+{
+  "project": "C:\\Users\\asus\\Documents\\ChatGPT\\AAMAS27\\theory\\lean",
+  "platform": "Windows native, same toolchain as VS Code",
+  "source_files": 56,
+  "default_targets": [
+    "AgentUCT",
+    "AgentUCTPaper",
+    "AgentUCTProofGuide",
+    "AgentUCTCompleteProofsEN",
+    "AgentUCTProofGuideEN"
+  ],
+  "lake_build_source_count": 49,
+  "checks": [
+    {
+      "label": "lean-version",
+      "command": [
+        "C:\\Users\\asus\\.elan\\bin\\lean.exe",
+        "--version"
+      ],
+      "returncode": 0,
+      "log": "lean-version.log"
+    },
+    {
+      "label": "lake-version",
+      "command": [
+        "C:\\Users\\asus\\.elan\\bin\\lake.exe",
+        "--version"
+      ],
+      "returncode": 0,
+      "log": "lake-version.log"
+    },
+    {
+      "label": "mathlib-cache",
+      "command": [
+        "C:\\Users\\asus\\.elan\\bin\\lake.exe",
+        "exe",
+        "cache",
+        "get",
+        "Mathlib.Algebra.Order.Floor.Semiring",
+        "Mathlib.Analysis.SpecialFunctions.Log.Basic",
+        "Mathlib.Data.Finset.Option",
+        "Mathlib.Data.Real.Sqrt",
+        "Mathlib.MeasureTheory.Function.ConditionalExpectation.Basic",
+        "Mathlib.MeasureTheory.Measure.Real",
+        "Mathlib.Probability.Moments.SubGaussian",
+        "Mathlib.Tactic"
+      ],
+      "returncode": 0,
+      "log": "mathlib-cache.log"
+    },
+    {
+      "label": "lake-build",
+      "command": [
+        "C:\\Users\\asus\\.elan\\bin\\lake.exe",
+        "build"
+      ],
+      "returncode": 0,
+      "log": "lake-build.log"
+    },
+    {
+      "label": "Audit",
+      "command": [
+        "C:\\Users\\asus\\.elan\\bin\\lake.exe",
+        "env",
+        "lean",
+        "Audit.lean"
+      ],
+      "returncode": 0,
+      "log": "Audit.log"
+    },
+    {
+      "label": "AuditAlgorithm",
+      "command": [
+        "C:\\Users\\asus\\.elan\\bin\\lake.exe",
+        "env",
+        "lean",
+        "AuditAlgorithm.lean"
+      ],
+      "returncode": 0,
+      "log": "AuditAlgorithm.log"
+    },
+    {
+      "label": "AuditBudgetRevision",
+      "command": [
+        "C:\\Users\\asus\\.elan\\bin\\lake.exe",
+        "env",
+        "lean",
+        "AuditBudgetRevision.lean"
+      ],
+      "returncode": 0,
+      "log": "AuditBudgetRevision.log"
+    },
+    {
+      "label": "AuditDynamicCompletion",
+      "command": [
+        "C:\\Users\\asus\\.elan\\bin\\lake.exe",
+        "env",
+        "lean",
+        "AuditDynamicCompletion.lean"
+      ],
+      "returncode": 0,
+      "log": "AuditDynamicCompletion.log"
+    },
+    {
+      "label": "AuditFullPanelLivePrices",
+      "command": [
+        "C:\\Users\\asus\\.elan\\bin\\lake.exe",
+        "env",
+        "lean",
+        "AuditFullPanelLivePrices.lean"
+      ],
+      "returncode": 0,
+      "log": "AuditFullPanelLivePrices.log"
+    },
+    {
+      "label": "AuditGraphInformation",
+      "command": [
+        "C:\\Users\\asus\\.elan\\bin\\lake.exe",
+        "env",
+        "lean",
+        "AuditGraphInformation.lean"
+      ],
+      "returncode": 0,
+      "log": "AuditGraphInformation.log"
+    },
+    {
+      "label": "AuditReviewerRevision",
+      "command": [
+        "C:\\Users\\asus\\.elan\\bin\\lake.exe",
+        "env",
+        "lean",
+        "AuditReviewerRevision.lean"
+      ],
+      "returncode": 0,
+      "log": "AuditReviewerRevision.log"
+    },
+    {
+      "label": "AgentUCTProofGuide",
+      "command": [
+        "C:\\Users\\asus\\.elan\\bin\\lake.exe",
+        "env",
+        "lean",
+        "AgentUCTProofGuide.lean"
+      ],
+      "returncode": 0,
+      "log": "AgentUCTProofGuide.log"
+    },
+    {
+      "label": "AgentUCTProofGuideEN",
+      "command": [
+        "C:\\Users\\asus\\.elan\\bin\\lake.exe",
+        "env",
+        "lean",
+        "AgentUCTProofGuideEN.lean"
+      ],
+      "returncode": 0,
+      "log": "AgentUCTProofGuideEN.log"
+    }
+  ],
+  "status": "passed",
+  "lean_version": "Lean (version 4.24.0, x86_64-w64-windows-gnu, commit 797c613eb9b6d4ec95db23e3e00af9ac6657f24b, Release)",
+  "lake_version": "Lake version 5.0.0-src+797c613 (Lean version 4.24.0)",
+  "checked_source_files": 56,
+  "build_completed": true,
+  "build_error_or_warning_lines": []
+}

@@ -1,0 +1,303 @@
+\section{Detailed comparison protocols}
+\label{sec:followup-design}
+Eleven RAG methods have complete five-seed results: the four MCTS
+allocators, AgentUCT-StaticFull and six common-space controls.
+The three fixed pipeline references and fifty prespecified random workflows
+also have complete test measurements. The complete five-seed GSM8K results are reported in the supplementary
+experimental tables.
+
+\subsection{Direct algorithm comparison in the RAG space}
+\label{sec:rag-comparators}
+This comparison tests whether completion pricing remains useful when the
+alternative is model-guided editing, surrogate optimization or explicit
+stage allocation. Every optimizer uses the same 61,344-workflow grammar,
+150 training questions, 300 validation questions and 300 primary test
+questions. Qwen3.5-4B serves all generative roles, and the same retrieval
+components and persistent prefix execution service are available to every
+method. Search seeds are $\{11,23,37,53,71\}$. The endpoint at each of
+16M, 24M and 32M actual weighted-token units is selected from training Top5
+by validation F1, then evaluated on the primary test panel.
+
+The original twenty runs supply four completed rows in
+Table~\ref{tab:direct-algorithm-coverage-complete}. The six additional algorithms
+supply 30 completed method--seed searches and 90 budget-level quality cells.
+Complete five-seed results are available for AFlow--RAG, uniform-terminal
+search, FLASH*--RAG (TPE), EEIPU, LaMBO and MSBO. Their paired results
+appear in the main text and supplement. The comparison is between optimization
+algorithms within this RAG system. Each adapter preserves specified decisions
+from its source algorithm while changing the search domain, execution service
+and accounting unit. These boundaries are part of the experimental definition,
+with implementation details in the Supplementary Information\ifdefined\AgentUCTWithAppendix
+(Section~\ref{sec:rag-optimizer-adapters})\fi.
+
+\begin{table*}[t]
+\centering\small
+\caption{Direct RAG comparisons and AgentUCT ablations. Test F1 (\%) is mean
+$\pm$ sample SD over five paired seeds after training Top5 and validation
+selection. All rows use the common RAG protocol.}
+\label{tab:direct-algorithm-coverage-complete}
+\begin{tabularx}{\textwidth}{@{}lcccX@{}}
+\toprule
+Method & 16M & 24M & 32M & Selection mechanism in the common grammar\\
+\midrule
+AgentUCT & $67.40\pm2.54$ & $69.57\pm0.28$ & $69.57\pm0.28$ & Adaptive full remaining-cost estimate\\
+MCTS-UCT & $67.38\pm2.52$ & $68.01\pm1.12$ & $68.01\pm1.12$ & UCB allocation\\
+AgentUCT-NextC & $67.40\pm2.54$ & $67.83\pm2.69$ & $68.22\pm1.96$ & First positive unpaid cost\\
+AgentUCT-StaticFull & $67.40\pm2.54$ & $67.36\pm2.67$ & $67.36\pm2.67$ & AgentUCT ablation with a frozen complete-cost estimator; live execution reuse\\
+MCTS-Random & $67.40\pm2.54$ & $68.44\pm0.89$ & $68.80\pm0.87$ & Uniform child allocation\\
+AFlow--RAG & $65.93\pm1.91$ & $66.38\pm1.24$ & $67.25\pm1.57$ & Top-four parent mixture and Qwen edits with training feedback\\
+FLASH*--RAG (TPE) & $66.49\pm1.70$ & $66.96\pm0.97$ & $67.29\pm0.85$ & D-optimal design, linear EIPS and categorical TPE\\
+EEIPU--RAG & $67.15\pm2.17$ & $68.19\pm0.67$ & $67.29\pm0.78$ & Objective and stage-cost GPs with prefix-conditioned proposals\\
+LaMBO--RAG & $64.78\pm0.96$ & $65.87\pm2.29$ & $66.11\pm2.62$ & Slowly moving region sampling and local GP-UCB\\
+MSBO--RAG & $67.20\pm0.46$ & $67.93\pm2.57$ & $67.44\pm2.53$ & Cascade posterior with native start/advance execution\\
+Uniform-terminal search & $67.08\pm0.76$ & $66.68\pm0.82$ & $67.18\pm1.59$ & Uniform complete workflows, training Top5 and validation selection\\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\paragraph{AFlow--RAG.}
+AFlow's parent choice and model-directed expansion~\citep{zhang2024aflow}
+operate on complete RAG tuples. Among the $K\leq4$ highest-scoring completed
+parents, parent $i$ is sampled with probability
+$0.3/K+0.7\exp(20F_i)/\sum_j\exp(20F_j)$, where $F_i$ is its own training
+F1. The editor receives the selected tuple, that parent's modification
+history and up to three training examples containing the question,
+prediction, gold answer and F1. It proposes a legal tuple and an explanation
+of the edit. Qwen proposals use temperature 0.7, top-$p=0.9$ and a
+2,048-token output cap; execution remains greedy. Each round permits three
+attempts in total. Illegal tuples, previously evaluated complete workflows
+and repeated parent-specific modification text trigger repair. An exhausted
+round supplies no quality observation, while every paid attempt remains in
+search cost. The fixed initial BM25 workflow is also evaluated and charged.
+
+\paragraph{FLASH*--RAG (TPE).}
+The implementation follows FLASH's design, algorithm-selection and
+parameter-tuning phases~\citep{zhang2016flash}. Greedy D-optimal design
+occupies the first 15\% of the 32M search budget; additive ridge quality and
+log-cost models guide EIPS selection until 30\%; categorical tree-structured
+Parzen estimation (TPE) uses the remaining 70\%. These are transition
+thresholds on completed actual bills, so a complete evaluation can cross a
+phase boundary. The algorithm graph is pruned using its ten highest-ranked
+structural signatures. Hyperopt's categorical density ratio then selects an
+unseen legal configuration in that graph. The star identifies the TPE variant;
+the acquisition's log-cost convention and the finite-grammar pruning rule
+are specified in the appendix.
+
+\paragraph{EEIPU--RAG.}
+EEIPU~\citep{essofi2024memoization} learns training F1 with one Gaussian
+process (GP) and execution log-cost with three independent stage GPs. The
+stages are query construction, evidence construction and answer generation.
+After five complete warmup workflows, the current training Top5 supplies
+cached prefixes for candidate generation, alongside an empty prefix for
+exploration. Expected improvement is multiplied by expected inverse
+remaining cost raised to $\max(0,1-C/32\mathrm{M})$, using 128 Monte Carlo
+draws and an approximately 1,024-candidate pool. Cache discounts require a
+materialized prefix for every training question. A one-token acquisition
+floor stabilizes the surrogate while actual zero-cost reuse remains zero
+in the physical bill.
+
+\paragraph{LaMBO--RAG.}
+LaMBO~\citep{lin2021lambo} couples local GP-UCB choices to slowly moving
+sampling over a modular partition tree. The first two of the same three
+RAG modules are each split into two approximately equal-sized categorical regions,
+giving fixed tree depths $(1,1)$. After five complete warmup workflows,
+local acquisition uses $\mu+2\sigma$ and the multiplicative bandit update
+uses learning rate 0.05. The lazy update retains the preceding workflow's
+earlier modules when a later region changes. Finite exhausted regions are
+masked, with an explicit return to the root when needed. This tests the
+modular allocation mechanism with fixed partitions and the common persistent
+cache. Its preceding-configuration switching model is distinct from the
+physical cache bill reported here.
+
+\paragraph{MSBO--RAG.}
+MSBO~\citep{torresi2026multistage} can start an evidence prefix or advance a
+saved prefix to an answer. The first stage executes the first six actions,
+through evidence reranking, on all 150 questions. Its two observations are
+the mean grounded answerability judgment and the mean fraction of evidence
+documents cited by the grounded assessment. Neither uses a gold answer or
+a terminal F1. The second stage restores those native execution states,
+chooses the retained evidence and context order, and generates all answers
+before training F1 is released. Independent stage GPs propagate a cascade
+posterior with 256 Monte Carlo draws after five complete warmup workflows.
+The acquisition uses expected improvement, falling back to UCB when its
+maximum is at most 0.005. UCB follows the source rule
+$\beta_{\mathrm{MSBO}}(C)=1+100\max(0,1-C/32\mathrm{M})$.
+
+The source algorithm's final full-path decision is retained by mapping its
+$100+5$ cost epochs to the 32M reporting budget. When the remaining budget
+is at most $32\mathrm{M}/105$, the next acquisition chooses a complete
+cascade; the same choice is made every 1,000 acquisition decisions. Once
+selected, both stages of that path finish even if the evidence stage crosses
+the budget. Its suffix is fixed by that decision. Ordinary stage decisions
+update only after all 150 questions have joined. This preserves
+start/advance control while the tree-search arms, AFlow and the complete-workflow
+surrogates retain a full-workflow feedback barrier.
+
+\paragraph{Snapshots and interpretation.}
+For every method, the primary budget result uses the last complete terminal
+workflow snapshot whose cumulative search bill is at most the reporting
+budget. Its shortlist, cache and optimizer state are frozen at that boundary.
+MSBO additionally retains stage-boundary snapshots to measure paid evidence
+work and unfinished samples; these cannot contribute a partial F1 to the
+primary comparison. Physical bills include initialization, intermediate
+stages, model-directed proposals, repairs and paid failures as applicable.
+Crossing evaluations remain in the full bill, and all validation and test
+charges are reported separately. Surrogate fitting and acquisition time are
+measured in seconds alongside model-token costs. Uniform-terminal search
+draws distinct legal complete paths uniformly and uses the same training
+Top5 and validation endpoint rule. The resulting comparisons isolate
+allocation within a shared system; they do not claim reproduction of the
+original papers' complete benchmark systems or native cache policies.
+
+\subsection{Published pipelines, random composition and strong planners}
+\label{sec:workflow-references}
+Fixed pipelines test whether optimization improves on an established
+combination of components. Following the earlier Agent-UCT study's sequence
+of fixed references, selected configurations and held-out quality
+\citep{li2026agentuct}, we compare three published combinations: Query2doc
+query expansion followed by BM25 retrieval~\citep{wang2023query2doc}, HyDE
+hypothetical-document generation followed by dense retrieval
+\citep{gao2023hyde}, and RankGPT-style BM25 candidate retrieval followed by
+listwise language-model reranking~\citep{sun2023rankgpt}. Each paper itself
+specifies a combination represented by the current grammar.
+
+All three share the candidate documents, Qwen3.5-4B executor, grounded
+evidence assessment, retrieval width six, one retrieval round, four retained
+documents and ranked context. The supplement lists their exact actions and
+changes from the originals: Query2doc's prompt and query repetition,
+HyDE's encoder and single generated passage, and RankGPT's model and ranking
+window. They are shared-space pipeline adaptations, with no system-level
+reproduction claim. Each runs directly on the same 300 primary test
+questions; all three F1/EM values, paired effects and execution bills are
+reported separately. No test outcome selects a reference.
+
+\paragraph{Random complete workflows.}
+Using seed 20261004, we sampled fifty distinct workflows before testing.
+Uniform draws over the 61,344 legal terminals give each workflow equal
+probability; uniform child choices can give different leaf probabilities.
+The experiment reports the entire test-quality distribution, its mean,
+median, spread and costs. It does not report the best test-scoring draw as
+a selected baseline. This reference asks how much quality is available from
+unoptimized composition. MCTS-Random allocation and uniform-terminal search
+answer different algorithmic questions: both spend search tokens and select
+an endpoint through the declared training and validation protocol.
+The three fixed pipelines plus fifty random workflows require 15,900 primary
+question--workflow executions before reuse; sentinels are separate.
+
+\paragraph{Strong-model planning, deferred.}
+DeepSeek-V4-Pro and GPT-5.5 were specified to propose five independently
+recorded plans each from identical task instructions, grammar, component
+descriptions and three frozen training examples. They receive no primary
+test questions, answers, predictions or reference scores. Each plan is
+frozen before Qwen3.5-4B executes it; no quality-feedback optimization or
+validation selection is allowed. At most one syntax-only repair follows an
+invalid response, and every attempt remains in the bill. An unrepaired
+plan receives zero task quality in the intent-to-run mean, alongside a
+separately reported valid-plan mean.
+
+The requested identifiers are native \path{deepseek-v4-pro} and OpenRouter's
+\path{openai/gpt-5.5}~\citep{deepseek2026v4pro,openai2026gpt55}, both with
+high reasoning effort. Their first real requests were rejected for account
+balance and regional availability, respectively. The references are now
+deferred by the authors. These infrastructure failures are not zero-score
+planning outcomes, and no planner quality result is reported. A later
+campaign will retain all five plans per model, provider identifiers, prompts,
+reasoning settings and actual usage, with API currency/raw tokens separate
+from the local executor's weighted-token accounting.
+
+\paragraph{Test-level inference.}
+Algorithm comparisons retain five seed values, mean $\pm$ sample SD and
+paired effect sizes, without algorithm-level significance testing.
+For reference $r$ and question $q$, define
+\[
+ d_{r,q}=\frac{1}{5}\sum_s F_{s,q}^{\mathrm{AgentUCT},32\mathrm{M}}-F_{r,q},
+\]
+where $F_{r,q}$ is one fixed pipeline's score or the mean score across all
+fifty random workflows. The primary effect is $300^{-1}\sum_q d_{r,q}$.
+A paired bootstrap of question IDs supplies a conditional 95\% interval;
+a paired sign-randomization test supplies a two-sided test of the declared
+exchangeability null. Each question's full seed/workflow vector moves
+together. Holm adjustment covers the four active contrasts: three fixed
+pipelines and the random-composition mean. Planner contrasts are deferred.
+The 32M endpoint is fixed; 16M and 24M remain descriptive sensitivity results.
+Test outcomes never select a reference, budget or parameter value.
+
+The intervals describe question variation for the observed workflows.
+Variation across workflows and sensitivity to resampling both workflows
+and questions are reported separately, as is search-seed variation.
+The $5\times300$ score cells are
+not 1,500 independent trials; repeated budgets are not new test samples.
+Because the primary panel has already been inspected during development,
+these are retrospective comparisons on that panel.
+
+\subsection{The second AFlow experiment: one generated-program system}
+\label{sec:aflow-system-study}
+The second experiment compares allocators inside one AFlow system. It is
+distinct from AFlow--RAG above, which optimizes a fixed component grammar.
+All three primary arms---AFlow's adapted parent selector, MCTS-UCT and AgentUCT---
+share the initial program, Qwen3.5-4B editor and executor, prompts,
+operators, execution feedback, code sandbox, scorer, repair limits, duplicate
+handling and held-out selection protocol. MCTS-UCT and AgentUCT share progressive
+widening $\min(8,\max(1,\lceil\sqrt{N}\rceil))$, depth limit 12 and no rollout;
+their difference is completion pricing. AFlow samples among the four
+highest-scoring eligible parents using its original probability mixture,
+with the same depth and eight-child caps but without visit-based widening.
+Its comparison therefore concerns the allocation policy as a whole. The
+shared execution system isolates those policy differences from changes in
+the editor or operators; the bounded adapter does not reproduce the original
+AFlow benchmark setup.
+
+The GSM8K panels contain 150 training, 300 validation and 300 primary test
+questions, with separate calibration and sentinel questions and exclusions
+for the development pilot. Training and validation use the official training
+split; primary testing uses the official test split. Five seeds give fifteen
+searches. Independent cost calibration evaluated four fixed programs on
+twelve separate questions: Custom, Programmer, two-step refinement, and
+three-answer generation followed by ScEnsemble. Four predetermined editing
+episodes measured proposal and repair cost without executing their generated
+programs. The calibration cost was 109,983 raw tokens.
+
+The measured costs set $C_{\rm ref}=150{,}954.5$ raw tokens and reporting
+budgets of 6.423M, 12.772M and 19.122M raw tokens. The reference is the median
+projected 150-question fixed-program bill plus the median editing-episode
+bill. The budget rule adds 8, 16 or 24 times the largest projected program
+bill plus the largest editing bill to the projected initial-program cost,
+rounding upward to 1,000 tokens. These are cost-based planning equivalents;
+actual completed evaluations depend on the programs proposed. No test quality
+enters calibration or budget choice. Every evaluation completes before its
+actual bill determines the affordable snapshot. The formal-config tiny changes
+only loaded data, retaining these algorithm, model, budget and cost settings.
+
+The search bill includes proposal, repair, execution and the whole crossing
+evaluation. A completed full training panel supplies one reward; no partial
+panel updates tree statistics or prices. Generated-program validity, useful edit rate,
+duplicate rate, depth and selection counts, failure bills, cache hits and
+actual raw tokens accompany accuracy. The bounded pilot remains a separate
+negative result: both methods chose the initial workflow and scored 22/24.
+Its zero cache hits and reused development panel do not supply evidence for
+formal quality or reuse advantages.
+
+\subsection{Mechanism tests and execution order}
+The completed AgentUCT-StaticFull comparison
+(Section~\ref{sec:static-full-results}) tests the joint contribution of
+adapting prices, continuation demand and cache membership. It holds the
+complete-cost reference static while retaining live execution reuse.
+Its full protocol, paired endpoints, selected configurations and phase
+bills are given in the supplementary experimental design.
+
+Saved RAG traces locate the observed benefit in root allocation after a costly
+common initialization. Saved AgentUCT GSM8K seed-37 traversals reached
+selection-state depth four and record cost-induced decisions below the root
+(see the supplementary experimental design). Selection depth describes where
+the allocator compares alternatives, separately from generated-program depth.
+These decisions establish recursive allocation changes without isolating
+their contribution to endpoint quality; no search replay is required.
+
+The complete five-seed GSM8K comparison measures transfer to generated
+programs. AgentUCT had a modest largest-budget mean advantage over MCTS-UCT
+and the same mean as AFlow. The supplementary tables retain every
+seed and frozen budget, including opposite seed-level outcomes and reused
+test endpoints. These results do not establish a uniform quality advantage
+across tasks. The completed five-seed AFlow--RAG comparison remains separate
+competitive evidence within the shared discrete space. Additional synthetic
+matrices and cache-disabled historical replays are deferred.

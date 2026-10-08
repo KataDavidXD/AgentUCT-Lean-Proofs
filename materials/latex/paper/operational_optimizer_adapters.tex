@@ -1,0 +1,370 @@
+\section{Algorithm Adapters in the Shared RAG Grammar}
+\label{sec:rag-optimizer-adapters}
+
+The direct comparison holds the executable workflow family fixed and changes
+how the next evaluation is chosen. This section specifies the implemented
+adapters behind Table~\ref{tab:direct-algorithm-coverage}. It documents an
+experimental protocol; the pending rows have no completed five-seed quality
+estimate. The original algorithms motivate the selection rules, while the
+categorical representation, RAG observations and shared execution service
+define their use in this study.
+
+\subsection{Common representation, feedback and accounting}
+\label{sec:adapter-common-contract}
+Write a legal workflow as $x=(a_1,\ldots,a_9)$. Its actions select the query,
+retriever, relevance or diversity rule, retrieval width, stopping rule,
+reranker, retained evidence count, context order and answer generator.
+The no-loop grammar has 61,344 terminal tuples. A candidate is legal only if
+every action is admitted after its preceding prefix; this enforces the
+query--retriever coupling for HyDE and the matching evidence-count action
+at generation. Candidate sets contain only legal terminals. Complete
+workflows already evaluated within a run are excluded from further
+objective evaluations.
+
+The scalar objective is mean answer F1 over the fixed 150-question training
+panel. Complete-workflow optimizers receive that value only after every
+question has finished. EEIPU and LaMBO use three modules ending after
+actions 1, 6 and 9: query construction, evidence construction, and context
+and answer generation. These module boundaries organize the surrogate;
+their objective observation remains a complete-panel F1. MSBO instead
+executes two stages ending after actions 6 and 9, with an intermediate
+observation explicitly defined below. No optimizer receives validation or
+primary-test feedback during search.
+
+All runs use the same persistent WTB prefix service and actual weighted-token
+accounting. A prefix is declared available to a panel-level cost model only
+when it is materialized for all 150 training questions. Reusing a prefix
+restores its execution state; it does not create a new objective measurement.
+Recorded physical receipts provide both the new incremental bill and, where
+needed, an earlier observed cold-stage cost. Reading a previous receipt for
+surrogate fitting does not charge it again. Input-document indexing is
+common preparation and is reported separately; sharing those prepared
+indices transfers no predictions, search history or executed workflow
+prefixes between runs.
+
+For a reporting budget $b$, let $t_b$ be the last complete terminal-workflow
+boundary with cumulative search charge $C_{t_b}\leq b$. Training Top5,
+the cache view and optimizer history all come from that boundary. Validation
+then chooses one of those workflows for primary-test evaluation. Earlier
+snapshots cannot use a later observation, cache entry or surrogate update.
+The raw account retains all intermediate stages and the full crossing
+evaluation. Initialization, proposal generation, repairs and paid failures
+are included when the method incurs them. Validation, test and shared
+preparation remain separate cost categories. Resource-dependent schedules
+use the largest reporting budget, $B=32\mathrm{M}$, throughout a run; the
+16M and 24M results are snapshots of that same trajectory.
+
+\begin{table*}[t]
+\centering\small
+\caption{Fixed adapter settings. Counts refer to paid complete training
+workflows unless stated otherwise. A model-based candidate set is evaluated
+by the acquisition function; only its selected workflow is executed on the
+training panel.}
+\label{tab:rag-adapter-settings}
+\begin{tabularx}{\textwidth}{@{}lXX@{}}
+\toprule
+Adapter & Initialization and allocation & Fixed numerical settings\\
+\midrule
+AFlow--RAG & One BM25 workflow; top-four parent mixture; Qwen edits
+& Uniform weight 0.3; softmax weight 0.7 and scale 20; temperature 0.7;
+top-$p$ 0.9; three attempts per round; 2,048 output tokens\\
+FLASH*--RAG (TPE) & D-optimal design, linear EIPS, then pruned categorical TPE
+& Phase thresholds $0.15B$ and $0.30B$; at most 1,024 design signatures;
+ten pruning signatures; ridge penalty 1; EI margin 0.01; TPE $\gamma=0.25$\\
+EEIPU--RAG & Five warmup workflows; Top5-prefix and empty-prefix proposals
+& Candidate target 1,024; 128 cost Monte Carlo draws; acquisition floor
+one weighted-token unit; cost exponent $\max(0,1-C/B)$\\
+LaMBO--RAG & Five warmup workflows; modular partition tree and lazy updates
+& Tree depths $(1,1)$; local UCB $\mu+2\sigma$;
+bandit learning rate 0.05; fixed categorical partitions\\
+MSBO--RAG & Five complete warmup workflows; evidence-start or saved-prefix advance
+& 256 new-path candidates; 256 cascade draws; EI fallback threshold 0.005;
+$\beta=1+100\max(0,1-C/B)$; full-path window $B/105$\\
+Uniform-terminal search & Uniform terminal ranks without replacement
+& Same five search seeds and maximum 256 complete workflows\\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\subsection{AFlow: parent selection, feedback and legal edits}
+\label{sec:aflow-rag-adapter}
+The adapter retains AFlow's score-weighted parent mixture and
+experience-guided proposal mechanism~\citep{zhang2024aflow}. Its initial
+workflow uses the original query, BM25, relevance selection, retrieval
+width six, no additional retrieval round, identity reranking, four retained
+documents and ranked context. This initial workflow receives the same
+complete training evaluation and bill as a proposed workflow.
+
+Completed workflows are sorted by their own training F1, with earlier
+evaluation order breaking ties. If $K$ eligible workflows are available,
+the parent pool contains the best $\min(4,K)$. Denoting its size by $k$,
+the probability of choosing parent $i$ is
+\[
+ p_i=\frac{0.3}{k}
+       +0.7\frac{\exp(20F_i)}{\sum_{j=1}^{k}\exp(20F_j)}.
+\]
+These scores are the parents' own evaluations. Descendant returns are not
+backed up into the AFlow parent score. The selected parent's recorded
+modifications, resulting scores and unsuccessful proposals form its
+experience history.
+
+The Qwen editor receives that history, the parent tuple and the legal
+grammar. Training feedback contains up to three examples: the first
+imperfect predictions in frozen panel order, or the first examples if all
+predictions receive F1 one. Each example includes the question, prediction,
+training gold answer and per-question F1. Questions and predictions are
+limited to 800 and 400 characters, respectively. Thus the editor is allowed
+supervised training feedback, while held-out outcomes remain inaccessible.
+The prompt requests one component edit, allowing coupled changes needed
+for HyDE or matching evidence-count actions. The executor's task prompts
+and model weights cannot be edited.
+
+A response must contain a nonempty modification description and a complete
+action tuple. Acceptance checks enforce grammar legality, reject a terminal
+tuple already evaluated in the run, and reject an identical modification
+description previously attempted from the same parent. A failed check is
+returned to the editor for repair, with at most three generated responses
+in total per round. This is a bounded repair policy, rather than a new
+training evaluation for an invalid graph. All paid responses remain in the
+search bill. A round exhausted by invalid responses creates no F1 value.
+The implementation caps both proposal rounds and complete training
+evaluations at 256, counting the initial workflow among the latter.
+
+Proposals use temperature 0.7, top-$p=0.9$ and at most 2,048 output tokens.
+For reproducibility, proposal attempt $a$ in round $r$ has random seed
+$(s+1009r+9176a)\bmod 2^{31}$. Model execution for task answers retains the
+common greedy policy. Replacing Python graph edits by finite component
+tuples, restricting feedback to these examples and using one fixed-panel
+evaluation per valid tuple are declared adaptations of AFlow.
+
+\subsection{FLASH*: design, structural pruning and categorical TPE}
+\label{sec:flash-rag-adapter}
+FLASH separates algorithm choice from conditional parameter
+tuning~\citep{zhang2016flash}. We form a structural signature by retaining
+component families and fusion sources while removing numeric settings
+such as retrieval width, retained evidence count, mixture weights and
+diversity parameters. A second representation retains every categorical
+action and its setting. Both representations are one-hot encoded.
+
+The first workflow is uniform over legal terminals. While cumulative actual
+cost is below $0.15B=4.8\mathrm{M}$, or fewer than two observations exist,
+the design step greedily increases the design Gram matrix's
+pseudodeterminant. It considers at most 1,024 randomly sampled structural
+signatures when the available set is larger. Numeric settings are drawn
+uniformly among unseen legal workflows with the selected signature.
+The finite online design replaces the source benchmark's initialization
+schedule.
+
+From $0.15B$ to $0.30B=9.6\mathrm{M}$, additive ridge models predict F1
+and log observed execution cost from the structural encoding. Both use
+penalty one and an unpenalized intercept. Let $\mu_F(x),\sigma_F(x)$ be
+the quality prediction and $\widehat\ell_C(x)$ the fitted log-cost
+prediction. The source-code EIPS convention implemented here is
+\[
+ A_{\mathrm{FLASH}}(x)=
+ \frac{\operatorname{EI}(\mu_F(x),\sigma_F(x);F^*,\xi)}
+      {\max(\widehat\ell_C(x),10^{-6})},\qquad \xi=0.01.
+\]
+In particular, the denominator is the predicted log-cost used by the
+authors' public implementation; it is not exponentiated into expected
+seconds. Costs entering the logarithm have a one-unit floor. These floors
+protect the predictor and leave physical zero-cost receipts unchanged.
+The maximizing structural signature is selected, then an unseen legal
+setting within that signature is sampled uniformly.
+
+At $0.30B$, EIPS with $\xi=0$ ranks all structural signatures. The best ten
+define the retained choices at each component position. Their Cartesian
+closure, intersected with the legal grammar, forms the pruned graph; it
+can contain more than ten complete structural combinations. The remaining
+budget uses the FLASH* TPE variant. Hyperopt's categorical lower- and
+upper-loss densities use $\gamma=0.25$, prior weight one and its linear
+forgetting weights. The candidate score is the sum of log density ratios
+over categorical variables, maximized over unseen legal points in the
+pruned graph. Query and retriever form one joint variable so that HyDE
+constraints hold. Other variables encode selection, retrieval width,
+reranking, retained evidence and context order. Ties are sampled uniformly.
+
+The 15\%/15\%/70\% phase proportions are actual-cost thresholds, not
+numbers of workflow evaluations. Every selected evaluation finishes before
+a phase transition. The common persistent cache replaces FLASH's native
+cache management, and exhaustion of the pruned finite graph ends search.
+These choices define FLASH*--RAG (TPE), distinct from a replication of a
+FLASH--SMAC experiment.
+
+\subsection{EEIPU: measured stage costs and memoized prefixes}
+\label{sec:eeipu-rag-adapter}
+EEIPU combines objective improvement with uncertain remaining execution
+cost~\citep{essofi2024memoization}. After five uniformly drawn, distinct
+complete warmup workflows, it fits one GP to F1 and three GPs to log
+stage costs. Stage costs come from saved physical component calls for the
+same question and action prefixes, including recorded failed attempts.
+If a prefix is reused, its previously observed cold cost can train the
+surrogate while the current incremental bill remains zero. An unobserved
+cold cost is not imputed as a zero-cost observation.
+
+Candidate generation uses the empty prefix and the distinct available
+nonterminal module prefixes of the five best training workflows. With
+$P$ such prefixes, each supplies up to $\lceil1024/P\rceil$ uniformly
+sampled unseen legal completions, and duplicates are removed. The resulting
+pool is approximately 1,024 candidates; overlap and finite completion
+sets can reduce it. The empty prefix permits changes to every component.
+
+For candidate $x$, let $\widetilde c_j^{(d)}(x)$ be draw $d$ from stage
+$j$'s lognormal cost predictor. A full-panel cached prefix sets that stage's
+acquisition cost to $\epsilon=1$ weighted-token unit. The acquisition is
+\[
+ A_{\mathrm{EEIPU}}(x)=\operatorname{EI}(x)
+ \left[\frac{1}{128}\sum_{d=1}^{128}
+       \frac{1}{\sum_{j=1}^{3}\widetilde c_j^{(d)}(x)}\right]^{\eta(C)},
+ \qquad \eta(C)=\max(0,1-C/B).
+\]
+Independent stage models use independent normal draws, with common draws
+across candidates within a stage to reduce ranking noise. Objective EI is
+computed analytically from the quality GP. The one-unit acquisition floor
+does not add a charge to a physical cache hit.
+
+Our persistent cache retains every observed prefix. Consequently, all
+materialized full-panel prefixes can discount the acquisition, while only
+Top5 prefixes bias candidate generation. This differs from restricting
+physical cache capacity to the best five workflows. The categorical
+Mat\'ern-$5/2$ GPs, uniform legal completion search and normal Monte Carlo
+sampling are additional adaptations to the shared RAG domain.
+
+\subsection{LaMBO: modular regions and slowly moving allocation}
+\label{sec:lambo-rag-adapter}
+LaMBO uses modular structure to reduce changes to earlier
+computations~\citep{lin2021lambo}. The query and evidence modules are
+partitioned separately: their distinct categorical tuples are sorted and
+split at the midpoint, with the first group receiving the extra value when
+the count is odd. The two binary partitions define a structure-embedding
+tree with depths $(1,1)$. Partitions remain fixed throughout search.
+
+Five uniform complete workflows initialize a GP over the full one-hot
+configuration. For each tree region, the local candidate minimizes
+$1-\mu_F(x)-2\sigma_F(x)$ among its eligible unseen workflows. A lazy
+update keeps the previous workflow's modules before the first changed
+region fixed. Region selection conditions the current arm probabilities
+on the subtree determined by the preceding height. Independent random
+signs determine the next height, and the slowly moving bandit recursion
+updates multiplicative weights with learning rate 0.05. Only the selected
+workflow is executed; all local acquisition values are surrogate
+predictions rather than additional objective observations.
+
+Finite exhaustion requires explicit handling. Regions without eligible
+unseen workflows are masked. If the conditioned subtree has no candidate,
+selection returns to the available root regions. If every lazy suffix is
+exhausted while unseen prefixes remain, a recorded root reset releases
+the prefix restriction. The adapter retains the fixed-partition recursion
+and omits the source paper's empirical discard/refine heuristic. Its tree
+depths are not refitted from test results or realized cost advantages.
+
+LaMBO's preceding-configuration switching model and WTB's cumulative
+prefix availability describe different reuse conditions. This experiment
+reports the latter's physical calls and charges, including reuse of a
+prefix visited earlier than the immediately preceding workflow. A separate
+switching-cost diagnostic would require an explicitly specified module
+cost vector; it is not substituted for the measured optimization bill.
+
+\subsection{MSBO: native stage execution and cascade decisions}
+\label{sec:msbo-rag-adapter}
+MSBO chooses between initiating a sample and continuing an existing
+sample~\citep{torresi2026multistage}. Here an evidence sample consists of
+native execution checkpoints after the first six actions, one for each
+training question. Let $A_q$ be the grounded assessor's Boolean
+answerability judgment, $E_q$ the materialized evidence-document set, and
+$G_q\subseteq E_q$ the distinct document identifiers cited in its grounded
+facts. A completed evidence stage supplies
+\[
+ z_1=\frac{1}{150}\sum_q\mathbf{1}\{A_q=\mathrm{true}\},\qquad
+ z_2=\frac{1}{150}\sum_q\frac{|G_q|}{\max(1,|E_q|)}.
+\]
+These are execution-derived proxies. They contain no gold answer, answer
+correctness or partial-panel F1. An invalid native assessment contributes
+its recorded false judgment and empty evidence claims. A missing required
+assessment is an execution failure rather than an invented proxy value.
+
+Advancing a sample restores all six-action checkpoints and executes evidence
+retention, context ordering and answer generation. All 150 predictions must
+exist before the official answer F1 is calculated. This terminal observation
+alone can enter the training shortlist. A saved evidence sample can support
+multiple distinct suffixes under the common persistent execution service.
+
+Five complete warmup workflows, each with a distinct evidence prefix,
+initialize the cascade. A warmup prefix is followed by its chosen terminal
+suffix. Subsequently, two independent RBF GPs predict $z_1,z_2$ from prefix
+features; the terminal GP predicts F1 from the full configuration and both
+proxies. Including configuration features in the terminal GP retains
+pipeline identity beyond the two aggregated evidence observations. For a
+new prefix, 256 normal Monte Carlo draws propagate both proxy uncertainty
+and terminal uncertainty. Advancing an observed sample conditions on its
+measured proxies. The candidate groups comprise at most 256 new-prefix
+paths and every unseen legal suffix of each saved sample.
+
+The selection rule first maximizes Monte Carlo EI relative to the best
+completed training F1. If the largest EI is at most 0.005, it uses the
+source qUCB fallback. For terminal draws $Y^{(d)}(x)$ and their sample mean
+$\bar Y(x)$, the implemented single-candidate score is
+\[
+ U(x)=\frac{1}{256}\sum_{d=1}^{256}
+ \left[\bar Y(x)+\sqrt{\frac{\pi\beta_{\mathrm{MSBO}}(C)}{2}}
+                   |Y^{(d)}(x)-\bar Y(x)|\right],
+\]
+\[
+ \beta_{\mathrm{MSBO}}(C)=1+100\max(0,1-C/B),\qquad B=32\mathrm{M}.
+\]
+Actual cumulative search cost is updated after a complete stage panel.
+There is no cost division in this acquisition, consistent with the
+authors' non-cost-weighted main configuration. Here resource awareness
+enters the stopping account and the stated exploration schedule.
+
+The source implementation also occasionally selects a complete cascade.
+We retain its period of 1,000 acquisition decisions and map its
+$100+\text{initial-data}$ cost epochs to $100+5=105$ normalized units.
+The final full-path window is therefore $B/105$. When $B-C\leq B/105$, or
+the acquisition count is a multiple of 1,000, candidates are scored through
+the entire cascade posterior, even if a chosen prefix is already cached.
+The selected complete tuple is then fixed. A new prefix executes both
+stages; a materialized prefix proceeds directly to its selected suffix.
+If the evidence stage crosses the budget, its fixed suffix still finishes,
+with no intervening acquisition. This rule can cross both the resource
+budget and the ordinary stage-count ceiling, because it completes one
+already selected full-path decision.
+
+The default ceiling is 256 completed workflows or 512 selected stages,
+subject to that full-path completion rule. Every physical stage is billed
+in order, including evidence samples never advanced. Primary results use
+the terminal boundaries defined in Appendix~\ref{sec:adapter-common-contract}.
+Additional stage snapshots retain paid evidence, completed-stage counts
+and unfinished sample identities. Intermediate or crossing observations
+cannot enter an earlier primary snapshot. Saved decisions and native
+checkpoints allow a partially executed stage or fixed suffix to resume
+without selecting against later data.
+
+This adapter replaces continuous laboratory controls and measurements by
+finite RAG actions and two evidence proxies. It uses scalar-lengthscale RBF
+GPs and normal Monte Carlo draws in place of per-coordinate lengthscales
+and Sobol sampling. The five-workflow warmup replaces a dimension-scaled
+initial design. These adaptations preserve the start/advance decision and
+cascade uncertainty calculation while defining a new application of MSBO.
+
+\subsection{Surrogate computation and uniform-terminal control}
+The EEIPU and LaMBO GPs use Mat\'ern-$5/2$ kernels on one-hot action
+vectors; MSBO uses RBF kernels. Each target is centered and scaled, with a
+minimum scale of $10^{-3}$. A scalar lengthscale and observation-noise
+parameter are fitted by marginal likelihood when at least three
+nonconstant observations are available, using at most 40 optimization
+iterations. Log-lengthscale and log-noise bounds are $[-2.3,3]$ and
+$[-13.8,-0.7]$, respectively; the diagonal numerical jitter is $10^{-9}$.
+These are finite categorical surrogate choices. Surrogate
+fitting and acquisition are timed separately from task execution and are
+not converted into unobserved model-token charges.
+
+Uniform-terminal search provides a complete-workflow allocation control.
+Exact descendant counts assign each legal terminal an integer rank. A
+seeded sample of distinct ranks is uniform over terminals, even when
+different first actions have different numbers of completions. The selected
+paths undergo the same paid 150-question training evaluation, three budget
+snapshots and validation selection. This differs from random-tree allocation,
+whose local child choices induce a different terminal distribution, and
+from the fifty frozen random workflows evaluated directly on test in
+Section~\ref{sec:workflow-references}.

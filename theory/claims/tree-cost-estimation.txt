@@ -1,0 +1,19 @@
+ESTIMATION-01: connect full/legacy forecasts and error bounds to qid-prefix resources.
+
+Define the uniform-terminal law used by production and prove normalization on
+each legal child's nonempty terminal set. Express full reference cold cost as
+the weighted sum of marginal cold-resource demands; no resource independence
+assumption or normalization of those marginal demands is needed.
+
+For prefix-complete cache semantics, child/terminal demand inclusion makes every
+terminal cold bill at least the parent cold bill. Prove that legacy clipped
+continuation then equals full reference cold cost minus the common parent bill.
+Its ranking equivalence is conditional on no omitted action-dependent overhead.
+Sparse checkpoint caches use suffix semantics and need not have this inclusion
+property for their execution bill; retain the existing clipping counterexample.
+
+For full bill prediction plus overhead, specialize the proved reference-law
+error theorem to actual cold qid-prefix sets. Separate resource prediction,
+overhead prediction and reference/execution law mismatch. Input error envelopes
+are deterministic conditions, not MAE or automatically calibrated intervals.
+Prove common action-independent overhead cancels in the whole allocation rule.

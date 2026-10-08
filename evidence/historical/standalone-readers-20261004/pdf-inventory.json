@@ -1,0 +1,487 @@
+{
+  "English_build": "build.json",
+  "English_source": "standalone LaTeX entries",
+  "outputs": {
+    "AgentUCT_Supplement_Only_EN.pdf": {
+      "path": "C:\\Users\\asus\\Documents\\ChatGPT\\AAMAS27\\Agentic_Optimization\\output\\pdf\\proof-reading-20261004\\AgentUCT_Supplement_Only_EN.pdf",
+      "pages": 40,
+      "bytes": 849994,
+      "compile_passes": 2,
+      "labels": {
+        "app:cost-estimation": {
+          "number": "A",
+          "page": "1"
+        },
+        "eq:mse": {
+          "number": "1",
+          "page": "1"
+        },
+        "eq:fullestimate": {
+          "number": "2",
+          "page": "1"
+        },
+        "eq:state-price": {
+          "number": "3",
+          "page": "1"
+        },
+        "prop:error": {
+          "number": "1",
+          "page": "1"
+        },
+        "eq:costerror": {
+          "number": "4",
+          "page": "1"
+        },
+        "eq:sequentialcache": {
+          "number": "5",
+          "page": "2"
+        },
+        "eq:cacheforecast": {
+          "number": "6",
+          "page": "2"
+        },
+        "eq:next": {
+          "number": "7",
+          "page": "2"
+        },
+        "prop:next": {
+          "number": "2",
+          "page": "2"
+        },
+        "eq:nextnet": {
+          "number": "8",
+          "page": "2"
+        },
+        "eq:optimism": {
+          "number": "9",
+          "page": "3"
+        },
+        "app:graph-information": {
+          "number": "B",
+          "page": "3"
+        },
+        "eq:live-residual-update": {
+          "number": "10",
+          "page": "3"
+        },
+        "prop:graph-separation": {
+          "number": "3",
+          "page": "4"
+        },
+        "prop:reachable-separation": {
+          "number": "4",
+          "page": "4"
+        },
+        "eq:joint-panel-cost": {
+          "number": "11",
+          "page": "4"
+        },
+        "app:finite-budget": {
+          "number": "C",
+          "page": "4"
+        },
+        "eq:net-certificate": {
+          "number": "12",
+          "page": "5"
+        },
+        "prop:allocation-error": {
+          "number": "5",
+          "page": "5"
+        },
+        "eq:allocation-error": {
+          "number": "13",
+          "page": "5"
+        },
+        "prop:budget-coverage": {
+          "number": "6",
+          "page": "5"
+        },
+        "eq:exclusive-cost": {
+          "number": "14",
+          "page": "5"
+        },
+        "app:shared-cache": {
+          "number": "D",
+          "page": "5"
+        },
+        "sec:shared-theorem": {
+          "number": "D.1",
+          "page": "5"
+        },
+        "thm:shared": {
+          "number": "1",
+          "page": "6"
+        },
+        "eq:shared-log": {
+          "number": "15",
+          "page": "6"
+        },
+        "eq:conservation": {
+          "number": "16",
+          "page": "6"
+        },
+        "eq:netregret": {
+          "number": "17",
+          "page": "6"
+        },
+        "eq:netbound": {
+          "number": "18",
+          "page": "6"
+        },
+        "eq:validation": {
+          "number": "19",
+          "page": "6"
+        },
+        "sec:dynamic-completion": {
+          "number": "E",
+          "page": "7"
+        },
+        "eq:generated-cost": {
+          "number": "20",
+          "page": "7"
+        },
+        "prop:dynamic-ledger": {
+          "number": "7",
+          "page": "7"
+        },
+        "eq:dynamic-ledger": {
+          "number": "21",
+          "page": "7"
+        },
+        "prop:dynamic-optimism": {
+          "number": "8",
+          "page": "7"
+        },
+        "eq:dynamic-width": {
+          "number": "22",
+          "page": "7"
+        },
+        "app:experiments": {
+          "number": "F",
+          "page": "8"
+        },
+        "tab:related": {
+          "number": "1",
+          "page": "9"
+        },
+        "tab:completed-aflow-paired": {
+          "number": "2",
+          "page": "9"
+        },
+        "tab:completed-seed11-extensions": {
+          "number": "3",
+          "page": "10"
+        },
+        "app:paper-workflow-references": {
+          "number": "F.5",
+          "page": "11"
+        },
+        "tab:paper-workflow-recipes": {
+          "number": "4",
+          "page": "11"
+        },
+        "tab:all-seeds": {
+          "number": "5",
+          "page": "13"
+        },
+        "sec:budget-detail": {
+          "number": "F.8",
+          "page": "13"
+        },
+        "fig:budget-quality-seeds": {
+          "number": "1",
+          "page": "14"
+        },
+        "tab:budget-quality-full": {
+          "number": "6",
+          "page": "14"
+        },
+        "tab:initialization-paired-evidence": {
+          "number": "7",
+          "page": "15"
+        },
+        "sec:nextc-detail": {
+          "number": "F.9",
+          "page": "15"
+        },
+        "tab:nextc-descriptive": {
+          "number": "8",
+          "page": "15"
+        },
+        "sec:allocation-configurations": {
+          "number": "F.10",
+          "page": "15"
+        },
+        "tab:budget-descriptive": {
+          "number": "9",
+          "page": "16"
+        },
+        "tab:seed-values-b16000000": {
+          "number": "10",
+          "page": "16"
+        },
+        "tab:seed-values-b24000000": {
+          "number": "11",
+          "page": "17"
+        },
+        "tab:seed-values-b32000000": {
+          "number": "12",
+          "page": "17"
+        },
+        "sec:resource-analysis": {
+          "number": "F.11",
+          "page": "17"
+        },
+        "tab:root-selections": {
+          "number": "13",
+          "page": "18"
+        },
+        "tab:root-costs": {
+          "number": "14",
+          "page": "18"
+        },
+        "tab:rag-config-code-definitions": {
+          "number": "15",
+          "page": "18"
+        },
+        "tab:rag-best-configs-16m": {
+          "number": "16",
+          "page": "19"
+        },
+        "tab:rag-best-configs-24m": {
+          "number": "17",
+          "page": "19"
+        },
+        "tab:rag-best-configs-32m": {
+          "number": "18",
+          "page": "20"
+        },
+        "tab:rag-config-dictionary-1": {
+          "number": "19",
+          "page": "20"
+        },
+        "tab:rag-operator-dictionary-1": {
+          "number": "20",
+          "page": "21"
+        },
+        "tab:rag-operator-dictionary-2": {
+          "number": "21",
+          "page": "21"
+        },
+        "tab:raw-model-tokens": {
+          "number": "22",
+          "page": "22"
+        },
+        "tab:search-crossing": {
+          "number": "23",
+          "page": "22"
+        },
+        "fig:resource-composition": {
+          "number": "2",
+          "page": "22"
+        },
+        "tab:original-phase-tokens": {
+          "number": "24",
+          "page": "23"
+        },
+        "tab:cache-efficiency": {
+          "number": "25",
+          "page": "23"
+        },
+        "fig:cache-work": {
+          "number": "3",
+          "page": "24"
+        },
+        "sec:static-complete-design": {
+          "number": "F.14",
+          "page": "25"
+        },
+        "fig:top1-ablation-all": {
+          "number": "4",
+          "page": "26"
+        },
+        "tab:gsm-nonroot-choice": {
+          "number": "26",
+          "page": "26"
+        },
+        "sec:top1-complete": {
+          "number": "F.15",
+          "page": "26"
+        },
+        "tab:top1-results": {
+          "number": "27",
+          "page": "27"
+        },
+        "sec:rag-optimizer-adapters": {
+          "number": "G",
+          "page": "27"
+        },
+        "sec:adapter-common-contract": {
+          "number": "G.1",
+          "page": "27"
+        },
+        "tab:rag-adapter-settings": {
+          "number": "28",
+          "page": "28"
+        },
+        "sec:aflow-rag-adapter": {
+          "number": "G.2",
+          "page": "28"
+        },
+        "sec:flash-rag-adapter": {
+          "number": "G.3",
+          "page": "29"
+        },
+        "sec:eeipu-rag-adapter": {
+          "number": "G.4",
+          "page": "29"
+        },
+        "sec:lambo-rag-adapter": {
+          "number": "G.5",
+          "page": "30"
+        },
+        "sec:msbo-rag-adapter": {
+          "number": "G.6",
+          "page": "30"
+        },
+        "app:operational": {
+          "number": "H",
+          "page": "31"
+        },
+        "app:rate": {
+          "number": "I",
+          "page": "32"
+        },
+        "eq:window": {
+          "number": "25",
+          "page": "32"
+        },
+        "lem:window": {
+          "number": "1",
+          "page": "32"
+        },
+        "eq:coverageconstant": {
+          "number": "26",
+          "page": "33"
+        },
+        "eq:biasthreshold": {
+          "number": "27",
+          "page": "33"
+        },
+        "eq:subtreebound": {
+          "number": "28",
+          "page": "33"
+        },
+        "eq:childcount": {
+          "number": "29",
+          "page": "33"
+        },
+        "tab:lean": {
+          "number": "29",
+          "page": "35"
+        },
+        "app:other": {
+          "number": "J",
+          "page": "35"
+        },
+        "app:lean": {
+          "number": "K",
+          "page": "38"
+        },
+        "app:results-extensions": {
+          "number": "K.1",
+          "page": "39"
+        },
+        "app:ai-assistance": {
+          "number": "L",
+          "page": "39"
+        }
+      },
+      "equations_start_at_one": true
+    },
+    "AgentUCT_Proof_Sections_EN.pdf": {
+      "path": "C:\\Users\\asus\\Documents\\ChatGPT\\AAMAS27\\Agentic_Optimization\\output\\pdf\\proof-reading-20261004\\AgentUCT_Proof_Sections_EN.pdf",
+      "pages": 8,
+      "bytes": 399884,
+      "compile_passes": 2,
+      "labels": {
+        "app:operational": {
+          "number": "1",
+          "page": "1"
+        },
+        "app:rate": {
+          "number": "2",
+          "page": "2"
+        },
+        "eq:window": {
+          "number": "3",
+          "page": "2"
+        },
+        "lem:window": {
+          "number": "1",
+          "page": "2"
+        },
+        "eq:coverageconstant": {
+          "number": "4",
+          "page": "2"
+        },
+        "eq:biasthreshold": {
+          "number": "5",
+          "page": "3"
+        },
+        "eq:subtreebound": {
+          "number": "6",
+          "page": "3"
+        },
+        "eq:childcount": {
+          "number": "7",
+          "page": "3"
+        },
+        "tab:lean": {
+          "number": "1",
+          "page": "4"
+        },
+        "app:other": {
+          "number": "3",
+          "page": "4"
+        },
+        "app:lean": {
+          "number": "4",
+          "page": "7"
+        },
+        "app:results-extensions": {
+          "number": "4.1",
+          "page": "8"
+        },
+        "app:ai-assistance": {
+          "number": "5",
+          "page": "8"
+        }
+      },
+      "equations_start_at_one": true
+    },
+    "AgentUCT_Theory_and_Proof_Guide_ZH.pdf": {
+      "path": "C:\\Users\\asus\\Documents\\ChatGPT\\AAMAS27\\Agentic_Optimization\\output\\pdf\\proof-reading-20261004\\AgentUCT_Theory_and_Proof_Guide_ZH.pdf",
+      "pages": 7,
+      "bytes": 433368
+    }
+  },
+  "Chinese_sources": [
+    "README.md section 6.1-6.8",
+    "theory/lean/AgentUCTPaper/TreeDecisionValue.lean"
+  ],
+  "symbol_font_fallback": [
+    "ℝ",
+    "∀",
+    "∃",
+    "∅",
+    "∧",
+    "≼",
+    "⊆",
+    "⟨",
+    "⟩"
+  ],
+  "main_manuscript_modified": false,
+  "visual_review": "All 8 English proof pages and 40 supplement pages inspected in rendered contact sheets; title, equation, declaration-map and adapter-table pages inspected at full size. Chinese page 6 rechecked; unchanged 7-page Chinese text retains its prior full-page review.",
+  "status": "passed"
+}

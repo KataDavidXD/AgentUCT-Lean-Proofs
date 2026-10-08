@@ -1,0 +1,16 @@
+HISTORY-01: local action histories are projections of the actual expanded-path events.
+
+For node p, read the first action after p in each expanded path. If the expanded
+path does not extend p strictly, that event contributes no local action at p.
+Keep chronological order. Prove that occurrences of action a in this projected
+history equal the operational backedCount at child p++[a]. Its selected event
+subsequence is exactly the child's backed-up terminal observations.
+
+Parent backedCount equals the length of its local action history plus the count
+of events whose expanded path is exactly p. In a LegalTreeRun a nonterminal p
+can be such an expanded endpoint at most once (its birth); an existing root
+has no such endpoint event. This derives the offsets used by the UCT index.
+
+Connect finite action histories to the existing pullCount definition without
+adding an independent count process. Later topology/selection constraints must
+refer to these projected histories, not merely a collection of unrelated bandits.

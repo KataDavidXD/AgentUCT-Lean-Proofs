@@ -1,0 +1,9 @@
+RATE-ALGEBRA-01: numerical and finite counting steps for the tree induction.
+
+Derive a concrete visit target m=ceil(max(1,(32*A/delta)^2,8*B/delta))
+such that any bound D <= A*log(N+1)+B gives D/N <= delta/4 for N>=m.
+Given an optimal child's backed mean within delta/4 of its subtree maximum,
+raw means below their own maxima, zero/common cost shift, and actual index
+maximization, derive the selected positive-gap child's prior-count cap
+4*c^2*log(parent+1)/delta^2. Count early and late selections explicitly.
+These are induction steps; they do not yet assume or assert a full-tree rate.

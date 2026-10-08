@@ -1,0 +1,14 @@
+'AgentUCTPaper.full_panel_residual_quotient' depends on axioms: [propext, Classical.choice, Quot.sound]
+'AgentUCTPaper.rectangular_cache_cost_quotient' depends on axioms: [propext, Classical.choice, Quot.sound]
+'AgentUCTPaper.full_panel_publication_rectangular' depends on axioms: [propext, Classical.choice, Quot.sound]
+'AgentUCTPaper.full_panel_history_rectangular' depends on axioms: [propext, Classical.choice, Quot.sound]
+'AgentUCTPaper.full_panel_residual_update' depends on axioms: [propext, Classical.choice, Quot.sound]
+'AgentUCTPaper.GraphWitness.counts_equal' depends on axioms: [propext, Quot.sound]
+'AgentUCTPaper.GraphWitness.residual_bills_equal' depends on axioms: [propext, Classical.choice, Quot.sound]
+'AgentUCTPaper.GraphWitness.bills_reverse' depends on axioms: [propext, Classical.choice, Quot.sound]
+'AgentUCTPaper.GraphWitness.no_count_only_optimal_policy' depends on axioms: [propext, Classical.choice, Quot.sound]
+'AgentUCTPaper.GraphWitness.randomized_excess_lower_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'AgentUCTPaper.GraphWitness.common_estimate_error_lower_bound' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'AgentUCTPaper.GraphWitness.budget_feasibility_reverses' depends on axioms: [propext, Classical.choice, Quot.sound]

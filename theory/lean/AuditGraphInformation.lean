@@ -1,0 +1,14 @@
+import AgentUCTPaper.TreeGraphInformation
+
+#print axioms AgentUCTPaper.full_panel_residual_quotient
+#print axioms AgentUCTPaper.rectangular_cache_cost_quotient
+#print axioms AgentUCTPaper.full_panel_publication_rectangular
+#print axioms AgentUCTPaper.full_panel_history_rectangular
+#print axioms AgentUCTPaper.full_panel_residual_update
+#print axioms AgentUCTPaper.GraphWitness.counts_equal
+#print axioms AgentUCTPaper.GraphWitness.residual_bills_equal
+#print axioms AgentUCTPaper.GraphWitness.bills_reverse
+#print axioms AgentUCTPaper.GraphWitness.no_count_only_optimal_policy
+#print axioms AgentUCTPaper.GraphWitness.randomized_excess_lower_bound
+#print axioms AgentUCTPaper.GraphWitness.common_estimate_error_lower_bound
+#print axioms AgentUCTPaper.GraphWitness.budget_feasibility_reverses

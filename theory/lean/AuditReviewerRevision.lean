@@ -1,0 +1,18 @@
+import AgentUCTPaper
+
+#print axioms AgentUCTPaper.grouped_panel_sum
+#print axioms AgentUCTPaper.demand_group_cost_quotient
+#print axioms AgentUCTPaper.demand_group_publication
+#print axioms AgentUCTPaper.grouping_respects_profiles
+#print axioms AgentUCTPaper.demand_separating_merge_loses_information
+#print axioms AgentUCTPaper.priced_choice_tradeoff
+#print axioms AgentUCTPaper.physical_saving_certificate
+#print axioms AgentUCTPaper.priced_choice_physical_cost
+#print axioms AgentUCTPaper.actual_net_gain_certificate
+#print axioms AgentUCTPaper.own_cache_cost_difference
+#print axioms AgentUCTPaper.priced_choice_no_universal_quality_dominance
+#print axioms AgentUCTPaper.cold_forecast_uniform_root_log_bound
+#print axioms AgentUCTPaper.dominated_cold_shared_root_log_bound
+#print axioms AgentUCTPaper.fixed_panel_family_log_bound
+#print axioms AgentUCTPaper.next_edge_own_cache_log_bound
+#print axioms AgentUCTPaper.nextUnpaidBill_le_complete

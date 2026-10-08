@@ -1,0 +1,220 @@
+\section{Additional Cost Estimation Results}
+\label{app:cost-estimation}
+\subsection{The Full Evaluation Target}
+The conditional completion mean $m_t$ is defined in Section~\ref{sec:estimation}.
+
+For any scalar $z$, the exact identity
+\begin{equation}
+ \E[(b_t(X)-z)^2]=\E[(b_t(X)-m_t)^2]+(z-m_t)^2
+ \label{eq:mse}
+\end{equation}
+shows that this full conditional mean uniquely minimizes squared prediction error. The expectation covers the whole completion needed to produce one reward, including nonreusable work. It does not estimate the cost of finishing the entire optimization run.
+
+When the actual continuation law or bills are unknown, a declared reference law gives the computable surrogate
+\begin{equation}
+ \widehat b_t(p,a)=\sum_{x\in\mathcal X(pa)}\rho_{C,t}(x\mid p,a)
+  \left[\sum_{r\in\mathcal D(x)\setminus K_t}\widehat w_{t,r}+\widehat h_t(x)\right].
+ \label{eq:fullestimate}
+\end{equation}
+Uniform legal-terminal enumeration is one choice of $\rho_C$. A continuation model matching actual traversal and rollout is better justified for predicting~\eqref{eq:actualmean}. A frozen per-action calibration mean can supply $\widehat w_{(q,u)}$, but it discards query and prefix variation. More detailed predictors should condition on relevant execution features when supported by calibration data.
+
+For $x=(a_1,\ldots,a_L)$, let $d_q(x,K)$ be the largest saved prefix depth, or zero if none is saved. The predicted cold bill is
+\[
+ \sum_{q\in\mathcal Q}\sum_{j>d_q(x,K)}\widehat w_{t,(q,x_{1:j})}.
+\]
+Current cache membership is observed. The quantities to predict are future resource demand and the cost of executing missing resources.
+
+Checkpoint contents refine the resource-price model. If an earlier observation
+of $(q,p)$ certifies that retrieval has halted, every later query/retrieval slot
+under $p$ has zero model-token cost for that query, including slots whose own
+checkpoints have never been materialized. We therefore set
+\begin{equation}
+ \widehat w_{t,r}=\begin{cases}0,&\text{a prior state certifies a skipped slot},\\
+ \widehat\mu_{t,r},&\text{otherwise},\end{cases}
+ \qquad 0\le\widehat w_{t,r}\le M_{a(r)},
+ \label{eq:state-price}
+\end{equation}
+where $M$ is a fixed resource-price envelope. Only observations available
+before selection enter this prediction. Each sample consults query-specific
+zero-work observations. The membership-only variant retains the online mean
+outside physical hits. The main loop-zero grammar has no extra retrieval rounds.
+
+This distinguishes two effects of observed execution state. Restorability
+removes materialized work from the bill. A known stop predicts zero model work
+for unmaterialized descendants; it creates no cache hit. The no-reuse control
+retains the same observed stop facts while rerunning every non-skipped call.
+Token-free state advancement still takes measured CPU time.
+
+\begin{proposition}[Prediction and law error]
+\label{prop:error}
+Suppose $|\widehat w_{t,r}-w_r|\le e_r$, $|\widehat h_t(x)-h_t(x)|\le e_h(x)$, and $|b_t(x)|\le B_{\max}$ on the child subtree. With $L_t=\sum_x|\rho_{C,t}(x)-\rho_{\mathrm{exec},t}(x)|$,
+\begin{equation}
+ |\widehat b_t-m_t|\le
+ \E_{\rho_{C,t}}\!\left[\sum_{r\in\mathcal D(X)\setminus K_t}e_r+e_h(X)\right]
+ +B_{\max}L_t.
+ \label{eq:costerror}
+\end{equation}
+\end{proposition}
+Thus a complete cost horizon removes truncation error while leaving resource and law errors to be estimated. Lower cost-prediction MSE alone does not imply a better final workflow or smaller $J$ regret.
+
+\subsection{What Cache Accumulation Changes}
+The graph has two distinct effects. Physical membership determines which query-prefix states can be restored and which work is billed. The estimator reads the same membership to remove that work from each candidate's predicted bill. Changing forecast weights or the reference law changes selection scores; it does not create a physical cache hit. Executing the selected completion changes the graph and thereby changes later forecasts.
+
+Write $c_w(K,A)=\sum_{r\in A\setminus K}w_r$. Sequential publication satisfies
+\begin{equation}
+ c_w(K,A\cup B)=c_w(K,A)+c_w(K\cup A,B).
+ \label{eq:sequentialcache}
+\end{equation}
+Thus the full bill from the pre-rollout snapshot already accounts for work saved as that rollout executes. The current implementation first chooses a symbolic completion, then executes and publishes its prefixes; it does not provisionally cache unexecuted previews.
+
+There is also a precise effect on later forecasts. Holding the candidate, law, and weights fixed, publishing a completed demand $A$ gives
+\begin{equation}
+ \widehat b^{\mathrm{cold}}(K)-\widehat b^{\mathrm{cold}}(K\cup A)
+ =\E_{\rho_C}\!\left[\sum_{r\in(\mathcal D(X)\cap A)\setminus K}\widehat w_r\right].
+ \label{eq:cacheforecast}
+\end{equation}
+The right side is the expected weight of newly saved resources shared with a later completion. It is nonnegative. Comparing successive iterations without fixing the law or predictor need not be monotone, because those quantities can also change.
+
+Equation~\eqref{eq:fullestimate} incorporates accumulated cache state when predicting the next evaluation. It does not value an action's future cache-warming benefit over several evaluations. Such a planner would require a continuation value on the joint tree-statistics and cache state, together with an explicit remaining budget and endpoint objective. Equation~\eqref{eq:cacheforecast} identifies its one-step savings component, but does not establish optimality of that planner. Richer query-prefix features could improve the current historical full-bill model. A calibrated cost lower bound would additionally support the conditional optimism statement below.
+
+\subsection{Two Short-Horizon Estimates}
+Let $\widehat d_t(p)$ be the predicted cold demand of prefix $p$. The historical
+\texttt{immediate} implementation, labeled next-edge in earlier experiments,
+estimates the marginal cold cost of the tree's direct child:
+\begin{equation}
+ \widehat b_t^{\mathrm{next}}(p,a)=\max\{0,\widehat d_t(pa)-\widehat d_t(p)\}.
+ \label{eq:next}
+\end{equation}
+It is one possible cost approximation. Write a full estimate as $\widehat b_t^{\mathrm{next}}+\tau_t(p,a)$. If the omitted tail $\tau_t(p,a)$ is common to all candidates, subtraction changes every index by the same constant and preserves the maximizer set. Otherwise the pairwise index difference changes by $\gamma(\tau_t(p,a)-\tau_t(p,b))$. A small common tail is unnecessary; small variation across candidates is the relevant condition for preserving comparisons.
+
+\begin{proposition}[Immediate-child reduction]
+\label{prop:next}
+Under successful persistent full-panel execution, every visited child $pa$ has its complete prefix demand cached. For nonnegative resource predictions, its penalty in~\eqref{eq:next} is zero. Consequently, this immediate-child allocation rule is equivalent to ordinary UCT allocation on the same history. Their complete trajectories agree when the initial state is identical and a shared resolver couples expansion, rollout, tie-breaking, evaluation outcomes, and stopping. In the fixed-table setting, this variant inherits the ordinary-UCT instance-dependent quality bound.
+\end{proposition}
+The reduction leaves qid-prefix caching and reward backup in place. It concerns
+the direct-child formula~\eqref{eq:next} among initialized children. Expansion
+and rollout can still execute uncached suffixes, whose predicted cost can be
+positive. Estimating the next unpaid execution instead gives a different rule.
+
+For
+example, a saved child followed by an uncached edge priced four gives zero
+in~\eqref{eq:next} and four in~\eqref{eq:next-unpaid}.
+Combining this reduction with own-cache accounting gives the immediate-child result: under the same finite fixed-table conditions, and cold-only costs or equal total recurring overhead,
+\begin{equation}
+ R_{\mathrm{net,next}}^\pi(T)
+ \le A_D^{\mathrm{UCT}}\log(T+1)+B_D^{\mathrm{UCT}}+\eta W.
+ \label{eq:nextnet}
+\end{equation}
+This upper bound follows from ordinary-UCT quality control and finite total cold work. It establishes neither a cost advantage over UCT nor endpoint-$J$ optimality.
+
+For a local comparison evaluated at the same state, omitted-tail variation gives a separate approximation bound. If the chosen action's omitted tail exceeds the comparator's by at most $\omega_t$, direct subtraction gives $R_{\mathrm{full}}^{\mathrm{local}}(T)\le R_{\mathrm{next}}^{\mathrm{local}}(T)+\eta\sum_{t\le T}\omega_t$. Hence a logarithmic proxy bound transfers when the accumulated tail variation is also logarithmic. Constant nonzero variation only supplies a linear error allowance. This same-state relation must not be substituted for the own-cache policy comparison in~\eqref{eq:nextnet}.
+
+The historical \texttt{continuation\_mean} averages
+$\max\{0,\widehat d_t(x)-\widehat d_t(p)\}$ over child terminals. Prefix-complete persistent caching implies $\widehat d_t(x)\ge\widehat d_t(p)$, so clipping is inactive. With a normalized reference law this equals the full cold mean minus the common parent bill. It therefore preserves the full-cold selection ordering. The implemented \texttt{acquisition\_mean} uses the full bill and includes configured future overhead. Action-dependent overhead and sparse-checkpoint semantics require separate comparison; they are not covered by the common-shift identity.
+
+Omitted recurring cost has a different consequence from finite cold work. A verified two-arm example has deterministic rewards $0.8,0.7$, immediate costs $0.4,0.1$, and full costs $0.4,0.4$. With cost weight one, its full-net regret is at least $T/10-40\log T-2/5$ under the initialized next-edge UCB rule with bonus $\sqrt{2\log(t+1)/N}$, where $t$ counts previous pulls. The second arm appears cheaper because its recurring tail of $0.3$ is omitted, although its full net value is smaller. This local recurring-cost example disproves a general logarithmic full-net guarantee for next-edge estimation. It lies outside the persistent cold-only model, and its numerical constants are not asserted for production's $c=1.4$ tree bonus.
+
+\subsection{When Is the Index a UCB?}
+For a stationary bandit with known fixed action cost $b_a$, subtracting $\gamma b_a$ from the reward index is exactly UCB on the shifted returns $Y_{a,s}-\gamma b_a$. A history-dependent graph bill cannot in general be absorbed into a fixed shifted reward distribution. Nor does a UCT backup sequence become independent merely because the same algebraic index is used.
+
+If a cost estimate has a valid radius $e_a$, a more principled optimistic net index uses $\underline b_a=\max\{0,\widehat b_a-e_a\}$. Given a valid reward upper bound $\mu_a\le Q_a+r_a$, it follows that
+\begin{equation}
+ \mu_a-\gamma b_a\le Q_a+r_a-\gamma\underline b_a.
+ \label{eq:optimism}
+\end{equation}
+With two-sided reward error for the selected action, maximizing this index yields selected net gap at most $2r_a+2\gamma e_a$. These are conditional optimism statements. Calibration means or empirical MAE do not supply confidence radii, and Theorem~\ref{thm:main} uses a separate deterministic analysis of adaptive backups. The current point-estimate implementation does not claim calibrated net optimism.
+
+
+\input{paper/graph_information}
+
+\input{paper/completion_budget}
+
+\section{Shared Caches, Actual Costs and Recommendation}\label{app:shared-cache}
+\subsection{Shared Cache across Fixed Panels}
+\label{sec:shared-theorem}
+Let a fixed finite family of panels maintain separate trees and deterministic
+reward tables. Each tree backs up complete returns on its own panel, while
+all trees publish successful qid--prefix executions into one persistent cache.
+External publications can reduce a panel's cold forecast. They cannot remove
+its own previously saved resources.
+
+\begin{theorem}[Shared-cache quality regret]
+\label{thm:shared}
+Under the hypotheses of Theorem~\ref{thm:main} for each panel, adding arbitrary
+external cache publications preserves its instance-dependent bound
+$R_j(T_j)\le A_j\log(T_j+1)+B_j$.
+For a fixed finite panel family scheduled for $T$ evaluations in total,
+\begin{equation}
+ \sum_j R_j(T_j)\le
+ \left(\sum_j A_j\right)\log(T+1)+\sum_j B_j.
+ \label{eq:shared-log}
+\end{equation}
+\end{theorem}
+The penalty remains nonnegative and bounded by the panel's prediction envelope $H_j=\gamma_j\sum_r M_{j,r}$. The original exploration argument eventually covers every local
+terminal, after which the panel's own publications already zero all its cold
+penalties. Adding shared entries preserves that fact. The same subtree
+induction proves the local bound; $T_j\le T$ gives~\eqref{eq:shared-log}.
+The same rate holds for a nonnegative cold-cost approximation dominated by
+the complete forecast under its own continuation law. Such a penalty has the
+same finite bound and vanishes after coverage. The first unpaid estimator
+has this property; its quality-regret bound follows from coverage and the
+tree induction, without requiring equality with UCT.
+The checkpoint-conditioned model~\eqref{eq:state-price} also satisfies this
+domination condition. At each history, finite-sum monotonicity bounds its cold
+bill by the fixed envelope $M$; averaging under that history's continuation
+law preserves the inequality. The prediction and law can both change while
+this envelope remains fixed. The three envelope lemmas in
+\texttt{DynamicCompletion} discharge the domination step.
+For~\eqref{eq:online-mean}, the calibration pseudo-observation and clipped
+physical observations lie in a fixed envelope, so their mean does too.
+The sample indices induce a nonnegative terminal law of total mass one;
+repeated terminals receive their accumulated mass. Lean's
+\texttt{online\_mean\_shared\_root\_log\_bound} in \texttt{OnlineMean}
+connects these online prices to the shared-cache quality theorem, and its
+sampled-law lemmas identify~\eqref{eq:sample-cost} with a reference expectation.
+Next-unpaid is dominated by that same complete forecast. The argument uses
+coverage followed by exactly zero cold penalties; boundedness alone does not
+imply logarithmic quality regret. The bound is in completed evaluations $T$,
+and asserts neither logarithmic regret in expenditure nor a finite-budget F1 advantage.
+The number and definitions of panels are fixed in this result. Merging rewards
+from changing query subsets into one node mean requires a different analysis.
+
+\subsection{Actual Search Costs and Recommendation}
+We first consider one fixed reward panel with no external publications.
+Let $W=\sum_{r\in\mathcal D(\mathcal X)\setminus K_0}w_r$, where $\mathcal D(\mathcal X)$ is the union of all terminal demands. The execution recurrence gives the pathwise conservation identity
+\begin{equation}
+ C_T^{\mathrm{cold}}=\sum_{r\in K_T\setminus K_0}w_r\le W.
+ \label{eq:conservation}
+\end{equation}
+This bound holds for adaptive choices. With several publishing panels, the
+equality applies to the family-wide cache and the sum of its physical charges.
+A local panel's bill alone does not equal growth of that shared cache, because
+other panels may have paid for the new entries.
+For another length-$T$ policy $\pi$ on the same fixed reward table, executing against its own cache, define the cumulative net comparison
+\begin{equation}
+ R_{\mathrm{net}}^\pi(T)=\sum_{t=1}^T[f(x_t^\pi)-f(x_t)]
+             +\eta(C_T-C_T^\pi),\quad\eta\ge0.
+ \label{eq:netregret}
+\end{equation}
+Nonnegative comparator costs imply
+\begin{equation}
+ R_{\mathrm{net}}^\pi(T)\le R_Q(T)+\eta\left(W+\sum_{t=1}^Th_t(x_t)\right).
+ \label{eq:netbound}
+\end{equation}
+If the two trajectories have equal total recurring overhead, that overhead cancels and the additive cost term is $\eta W$. Thus cold-only own-cache cumulative net regret is also $O(\log T)$. Arbitrary repeated overhead can contribute a linear term.
+
+For $T\ge1$, the best observed training workflow $\widehat x_T$ satisfies $V^*-f(\widehat x_T)\le R_Q(T)/T$ and becomes exactly optimal once all terminals have been covered. The single-panel endpoint sorts observed terminals by that panel's training score, takes a nonempty top-$k$ shortlist, and chooses its validation maximizer. For validation scores $g$, the condition $\sup_{x\in\mathcal X}|g(x)-f(x)|\le\epsilon$ gives
+\begin{equation}
+ \max_x g(x)-g(x_{\mathrm{end}})\le R_Q(T)/T+2\epsilon.
+ \label{eq:validation}
+\end{equation}
+This is a deterministic table-transfer bound; the experiment does not estimate a valid uniform $\epsilon$. Without such a condition, a training shortlist can omit the validation optimum even after full coverage.
+The main experiment uses $k=5$, ranking distinct completed workflows by full-training F1 and breaking ties by first evaluation. Validation ranks only these five candidates and never changes the search statistics. Historical multi-panel nominations are excluded from this protocol.
+
+Finally, endpoint utility $J=q_{\mathrm{rep}}(x_{\mathrm{end}})-\lambda_J C_{\mathrm{opt}}/\cref$ uses one declared reporting quality and the actual optimization bill. The formal reporting quality is held-out F1, excluding the tiny development sentinel; validation $g$ selects the workflow. The report presents F1 at common search budgets together with $J$ from the full physical optimization bill, including crossing and validation work. Retained-snapshot, validation, preparation and test bills are also listed separately. Its utility gap contains the cost difference even when reporting qualities are equal. $C_{\mathrm{opt}}$ includes the declared optimization phases, whereas~\eqref{eq:conservation} concerns search execution. Neither~\eqref{eq:mainbound} nor~\eqref{eq:validation} proves endpoint-$J$ optimality. The selection weight $\beta$ and reporting weight $\lambda_J$ have separate roles.
+
+
+\input{paper/dynamic_completion}
+\input{paper/operational_followup_design}
+\input{paper/operational_allocation_details}
+\input{paper/operational_experiments}
