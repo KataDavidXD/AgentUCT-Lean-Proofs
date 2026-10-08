@@ -1,0 +1,20 @@
+{
+  "pdf_edition": "2026-10-04 independent readers",
+  "documents": [
+    {
+      "file": "materials/pdf/AgentUCT_Proof_Sections_EN.pdf",
+      "pages": 8,
+      "bytes": 399884,
+      "all_pages_have_text": true,
+      "status": "passed"
+    },
+    {
+      "file": "materials/pdf/AgentUCT_Supplement_Only_EN.pdf",
+      "pages": 40,
+      "bytes": 849994,
+      "all_pages_have_text": true,
+      "status": "passed"
+    }
+  ],
+  "status": "passed"
+}

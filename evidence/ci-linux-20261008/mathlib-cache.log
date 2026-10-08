@@ -1,0 +1,46 @@
+info: mathlib: cloning https://github.com/leanprover-community/mathlib4.git
+info: mathlib: checking out revision 'f897ebcf72cd16f89ab4577d0c826cd14afaafc7'
+info: plausible: cloning https://github.com/leanprover-community/plausible
+info: plausible: checking out revision 'dfd06ebfe8d0e8fa7faba9cb5e5a2e74e7bd2805'
+info: LeanSearchClient: cloning https://github.com/leanprover-community/LeanSearchClient
+info: LeanSearchClient: checking out revision '99657ad92e23804e279f77ea6dbdeebaa1317b98'
+info: importGraph: cloning https://github.com/leanprover-community/import-graph
+info: importGraph: checking out revision 'd768126816be17600904726ca7976b185786e6b9'
+info: proofwidgets: cloning https://github.com/leanprover-community/ProofWidgets4
+info: proofwidgets: checking out revision '556caed0eadb7901e068131d1be208dd907d07a2'
+info: aesop: cloning https://github.com/leanprover-community/aesop
+info: aesop: checking out revision '725ac8cd67acd70a7beaf47c3725e23484c1ef50'
+info: Qq: cloning https://github.com/leanprover-community/quote4
+info: Qq: checking out revision 'dea6a3361fa36d5a13f87333dc506ada582e025c'
+info: batteries: cloning https://github.com/leanprover-community/batteries
+info: batteries: checking out revision '8da40b72fece29b7d3fe3d768bac4c8910ce9bee'
+info: Cli: cloning https://github.com/leanprover/lean4-cli
+info: Cli: checking out revision '91c18fa62838ad0ab7384c03c9684d99d306e1da'
+✔ [2/20] Built Cache.Lean (229ms)
+✔ [3/20] Built Cache.Lean:c.o (88ms)
+✔ [4/20] Built Cache.IO (1.0s)
+✔ [5/20] Built Cache.IO:c.o (1.2s)
+✔ [6/20] Built Cache.Hashing (672ms)
+✔ [7/20] Built Cache.Hashing:c.o (465ms)
+✔ [13/20] Built Batteries.Data.String.Basic:c.o (79ms)
+✔ [14/20] Built Batteries.Data.Array.Match:c.o (227ms)
+✔ [15/20] Built Batteries.Data.String.Matcher:c.o (204ms)
+✔ [16/20] Built Cache.Requests (944ms)
+✔ [17/20] Built Cache.Main (695ms)
+✔ [18/20] Built Cache.Main:c.o (533ms)
+✔ [19/20] Built Cache.Requests:c.o (1.3s)
+✔ [20/20] Built cache:exe (372ms)
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+100 1075k  100 1075k    0     0  3596k      0 --:--:-- --:--:-- --:--:-- 3596k
+
+installing leantar 0.1.15
+Fetching ProofWidgets cloud release... done!
+Current branch: HEAD
+Using cache (Azure) from origin: leanprover-community/mathlib4
+Attempting to download 3236 file(s) from leanprover-community/mathlib4 cache
+Downloaded: 1 file(s) [attempted 1/3236 = 0%, 32 KB/s]Downloaded: 358 file(s) [attempted 358/3236 = 11%, 3189 KB/s]Downloaded: 798 file(s) [attempted 798/3236 = 24%, 6912 KB/s]Downloaded: 1175 file(s) [attempted 1175/3236 = 36%, 1854 KB/s]Downloaded: 1567 file(s) [attempted 1567/3236 = 48%, 1117 KB/s]Downloaded: 1976 file(s) [attempted 1976/3236 = 61%, 9266 KB/s]Downloaded: 2360 file(s) [attempted 2360/3236 = 72%, 20488 KB/s]Downloaded: 2695 file(s) [attempted 2695/3236 = 83%, 1391 KB/s]Downloaded: 3076 file(s) [attempted 3076/3236 = 95%, 5329 KB/s]Downloaded: 3230 file(s) [attempted 3230/3236 = 99%, 8960 KB/s]Downloaded: 3232 file(s) [attempted 3232/3236 = 99%, 88 KB/s]Downloaded: 3236 file(s) [attempted 3236/3236 = 100%, 88 KB/s]
+Decompressing 3236 file(s)
+Unpacked in 22665 ms
+Completed successfully!

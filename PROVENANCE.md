@@ -12,6 +12,7 @@
 | LaTeX 数学证明及相关输入 | AAMAS27 当前论文源，2026-10-08 工作目录；归档 PDF 保留其历史版 |
 | 历史验证证据 | AAMAS27 `proof-guide-20261004`, `proof-guide-en-20261004`, `vscode-native-20261004`, `standalone-readers-20261004`，原始日志/JSON |
 | 本仓库验证 | `evidence/verification-20261008`；实际编译输出及逐定理公理检查 |
+| GitHub Linux CI | 2026-10-08，run `37733656335`，测试首次归档提交 `96e1206`；`evidence/ci-linux-20261008` 保存完整构建、公理与 PDF 检查证据 |
 | Lean / Lake | `leanprover/lean4:v4.24.0` |
 | mathlib | `v4.24.0`，Lake 锁定 `f897ebcf72cd16f89ab4577d0c826cd14afaafc7` |
 | Aesop | mathlib 的传递依赖，Lake 锁定 `725ac8cd67acd70a7beaf47c3725e23484c1ef50` |

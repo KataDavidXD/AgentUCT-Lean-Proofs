@@ -15,6 +15,7 @@ AgentUCT 的数学证明、Lean 源码和可复现证明工作流。仓库为 **
 | [模块化证明入口](theory/lean/AgentUCTPaper.lean) | 维护与编辑入口；原模块保留 |
 | [证明工作流](WORKFLOW.md) | 安装、Lean 技能、LSP、tactics、编译、公理检查及 CI |
 | [验证记录](evidence/verification-20261008/verification.json) | 本仓库副本的实际构建与公理检查结果 |
+| [Linux CI 证据](evidence/ci-linux-20261008/verification.json) / [GitHub 运行](https://github.com/KataDavidXD/AgentUCT-Lean-Proofs/actions/runs/37733656335) | 干净克隆的构建、全部公开定理公理检查与两份英文 PDF 检查通过 |
 | [来源与版本](PROVENANCE.md) | AAMAS27 工作目录快照、PDF 日期、工具版本及许可证 |
 
 PDF 仅收录两份英文 **2026-10-04 独立阅读版**。本仓库的 Lean 与 LaTeX 源码来自 **2026-10-08 当前工作目录**，包括尚未提交的证明导读和步骤注释。PDF 中的实验表与 `M.` / `S.` 外部引用对应当时版本。当前理论结果以源码和本仓库的新验证记录为准。
@@ -34,5 +35,7 @@ python scripts/verify_proofs.py --bootstrap
 工具栈固定为 **Lean 4.24.0 + mathlib v4.24.0 + lean4-skills 4.11.3 + lean-lsp-mcp 0.30.0**。Aesop 是 mathlib 的锁定依赖；`simp`、`ring`、`linarith`、`nlinarith`、`omega` 等按目标使用。Lean 内核检查最终证明项，技能和 MCP 帮助编写与诊断。
 
 2026-10-08 本仓库副本验证通过：56 个 Lean 源文件、模块版与英文单文件版各 385 个公开定理公理检查、中英文导读各 96 个引用、Aesop/算术 tactics 示例；无证明占位、非标准公理或编译 error/warning。MCP 初始化、真实文件诊断、目标状态及一个定理的公理检查通过。首次客户端兼容问题及修正单独保留；Windows MCP 退出后观察到 Python pipe cleanup 的 ignored 异常，协议检查和进程 exit 0 的结果分别记录。
+
+GitHub Linux CI 同日通过，耗时 7 分 27 秒，复现了上述 56 个源码检查、两版各 385 个公开定理公理检查、96 个导读引用和英文 PDF 结构检查。证明源对应首次归档提交 `96e1206`；后续来源链接与 CI 证据提交只更新文档/记录。GitHub runner 的 Node/Ubuntu 迁移提示保留为平台注释。
 
 `vendor/` 保存 lean4-skills 与 lean-lsp-mcp 的完整固定版本源码及原许可证。mathlib 与 Aesop 由 Lake 锁定和获取；它们的编译缓存、模型权重与运行环境不进入 Git。
