@@ -9,6 +9,8 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    env:
+      LEAN_NUM_THREADS: '2'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -21,3 +23,12 @@ jobs:
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
       - name: Build core and supplement and audit all three theorem groups
         run: python scripts/verify_proofs.py --bootstrap
+      - name: Show verification report and failed build tail
+        if: always()
+        run: |
+          if [ -f .verification/verification.json ]; then
+            cat .verification/verification.json
+          fi
+          if [ '${{ job.status }}' != 'success' ] && [ -f .verification/lake-build.log ]; then
+            tail -n 100 .verification/lake-build.log
+          fi

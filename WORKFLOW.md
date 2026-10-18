@@ -48,6 +48,10 @@ Local reports and logs go to ignored `.verification/`. An optional
 checks from a clean checkout. Inspect the status for the revision being used;
 a past green run does not verify later edits. Reports include actual elapsed
 times for the build and each axiom audit.
+CI sets `LEAN_NUM_THREADS=2` to keep the Lean task pool modest on the hosted
+runner. Its final step prints the verification report and, on failure, the
+build-log tail. These diagnostics contain only this public proof project;
+the workflow does not upload a source or log archive.
 
 ## Read or edit
 
