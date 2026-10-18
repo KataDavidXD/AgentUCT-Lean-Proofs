@@ -49,7 +49,12 @@ checks from a clean checkout. Inspect the status for the revision being used;
 a past green run does not verify later edits. Reports include actual elapsed
 times for the build and each axiom audit.
 CI sets `LEAN_NUM_THREADS=2` to keep the Lean task pool modest on the hosted
-runner. Its final step prints the verification report and, on failure, the
+runner and passes `--sequential` to build project modules one at a time in
+import order. This avoids overlapping large project elaborations; the final
+default build, additional audits and all three axiom groups still run.
+For the same build strategy locally, add `--sequential` to the command above.
+Each module's label is printed as it starts, and its output is retained in
+the local report directory. The workflow's final step prints the verification report and, on failure, the
 build-log tail. These diagnostics contain only this public proof project;
 the workflow does not upload a source or log archive.
 

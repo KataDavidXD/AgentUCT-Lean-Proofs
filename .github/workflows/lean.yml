@@ -22,7 +22,7 @@ jobs:
           sh /tmp/elan-init.sh -y --default-toolchain none
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
       - name: Build core and supplement and audit all three theorem groups
-        run: python scripts/verify_proofs.py --bootstrap
+        run: python scripts/verify_proofs.py --bootstrap --sequential
       - name: Show verification report and failed build tail
         if: always()
         run: |

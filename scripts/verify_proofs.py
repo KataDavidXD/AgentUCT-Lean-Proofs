@@ -57,9 +57,37 @@ def supplementary_sources(sources: list[Path], core: list[Path]) -> list[Path]:
                   if name != "SupplementaryProofs" and modules[name] not in core_paths)
 
 
+def project_module_order(sources: list[Path], targets: list[str]) -> list[str]:
+    """Order reachable project modules so each dependency is built first."""
+    modules = {".".join(path.relative_to(SOURCE).with_suffix("").parts): path
+               for path in sources}
+    ordered: list[str] = []
+    visited: set[str] = set()
+    active: set[str] = set()
+
+    def visit(module: str) -> None:
+        if module not in modules or module in visited:
+            return
+        if module in active:
+            raise RuntimeError(f"Cyclic project import: {module}")
+        active.add(module)
+        code = lean_code(modules[module].read_text(encoding="utf-8"))
+        for dependency in re.findall(r"^import\s+(\S+)", code, re.M):
+            visit(dependency)
+        active.remove(module)
+        visited.add(module)
+        ordered.append(module)
+
+    for target in targets:
+        visit(target)
+    return ordered
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--bootstrap", action="store_true")
+    parser.add_argument("--sequential", action="store_true",
+                        help="Build project modules one at a time before the full check")
     parser.add_argument("--output", type=Path, default=ROOT / ".verification")
     args = parser.parse_args()
     output = args.output.resolve()
@@ -123,6 +151,12 @@ def main() -> None:
                       "SupplementaryProofsGuideEN"):
             if entry not in config["defaultTargets"]:
                 raise RuntimeError(f"Missing default build entry point: {entry}")
+        if args.sequential:
+            modules = project_module_order(sources, config["defaultTargets"])
+            report["sequential_project_modules"] = len(modules)
+            save()
+            for module in modules:
+                run("build-" + module, [lake, "build", "+" + module])
         # All core and supplementary mathematics are reached by these entry points.
         # Do not elaborate the large supplementary sources a second time.
         run("lake-build", [lake, "build"])
