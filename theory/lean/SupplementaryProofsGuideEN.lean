@@ -23,7 +23,7 @@ WindowFiniteBudget proves a nonempty stationary accounting-task family with
 lies in [1,470,000, 1,471,000]; covered initial-price error is at most 1e-6.
 Each mode owns its cache and receipts. Complete retains ten evaluations and
 NextC nine. The favorable and adverse reward tables give training-net difference
-`+/- 0.1 - lambda * 2831.6322489 / Cref`, with opposite signs. These examples
+`± 0.1 - lambda * 2831.6322489 / Cref`, with opposite signs. These examples
 describe a mechanism under their input conditions; they are not a uniform
 finite-budget comparison of policies.
 -/
