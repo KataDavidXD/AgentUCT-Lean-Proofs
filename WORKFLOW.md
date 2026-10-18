@@ -52,6 +52,8 @@ CI sets `LEAN_NUM_THREADS=2` to keep the Lean task pool modest on the hosted
 runner and passes `--sequential` to build project modules one at a time in
 import order. This avoids overlapping large project elaborations; the final
 default build, additional audits and all three axiom groups still run.
+The job allows up to 120 minutes for a clean build and the complete official
+per-theorem axiom queries; a clean hosted build alone can approach an hour.
 For the same build strategy locally, add `--sequential` to the command above.
 Each module's label is printed as it starts, and its output is retained in
 the local report directory. The workflow's final step prints the verification report and, on failure, the
