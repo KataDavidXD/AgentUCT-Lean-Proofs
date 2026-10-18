@@ -1,6 +1,6 @@
 # AgentUCT Lean Proofs
 
-AgentUCT 的数学证明、Lean 源码和可复现证明工作流。仓库为 **GitHub 私密仓库**。
+AgentUCT 的数学证明、Lean 源码和可复现证明工作流。
 
 现有核心结果是：在固定有限终局树、固定训练奖励、成功持久发布和有界冷费用估计下，AgentUCT 的累计训练质量 regret 有 $O(\log T)$ 界；最佳已观察训练工作流的 simple gap 有 $O(\log T/T)$ 界。这里 $T$ 是完整评估次数，包括零新增冷费用的 cache replay。假设、常数与结论范围见 [证明背景与结果](BACKGROUND_AND_RESULTS.md)。
 
