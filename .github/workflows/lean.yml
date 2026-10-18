@@ -1,9 +1,6 @@
 name: Lean proof verification
 
-on:
-  push:
-  pull_request:
-  workflow_dispatch:
+on: [push, pull_request, workflow_dispatch]
 
 permissions:
   contents: read
@@ -22,14 +19,5 @@ jobs:
           curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
           sh /tmp/elan-init.sh -y --default-toolchain none
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
-      - name: Build and audit proofs
-        run: python scripts/verify_proofs.py --bootstrap --output evidence/ci
-      - name: Check archived PDFs
-        run: |
-          python -m pip install pypdf
-          python scripts/verify_pdfs.py --output evidence/ci/pdf-inventory.json
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: lean-verification
-          path: evidence/ci/
+      - name: Build both proof editions and audit theorem axioms
+        run: python scripts/verify_proofs.py --bootstrap

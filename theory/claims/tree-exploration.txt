@@ -1,9 +1,0 @@
-EXPLORATION-01: operational child visits exceed any fixed target.
-
-For a legal fixed finite workflow run whose raw backed rewards lie in [0,1],
-assume only the executable allocation rule (unvisited children first, otherwise
-maximal treeIndex) and predictable penalties in [0,H]. For each internal node,
-construct its finite legal child stream from its actual global history. If its
-local history has length at least 2*explorationWindowStart(c,H,K,m), prove that
-every legal child has more than m actual backed visits. Use c>0 and derive the
-root/non-root offset. Do not require policy constraints beyond the finite run.

@@ -1,28 +1,69 @@
 # AgentUCT Lean Proofs
 
-AgentUCT 的数学证明、Lean 源码和可复现证明工作流。
+Public mathematical companion to **Agent-UCT: Upper Confidence Bounds Applied
+to Trees for Cost-Aware Agentic Workflow Optimization**,
+[arXiv:2607.24162v3](https://arxiv.org/abs/2607.24162v3), 10 October 2026.
+The paper and its supplement define the claim scope. The
+[Python search core](https://github.com/KataDavidXD/AgentUCT) is maintained
+separately.
 
-现有核心结果是：在固定有限终局树、固定训练奖励、成功持久发布和有界冷费用估计下，AgentUCT 的累计训练质量 regret 有 $O(\log T)$ 界；最佳已观察训练工作流的 simple gap 有 $O(\log T/T)$ 界。这里 $T$ 是完整评估次数，包括零新增冷费用的 cache replay。假设、常数与结论范围见 [证明背景与结果](BACKGROUND_AND_RESULTS.md)。
+This repository provides the existing Lean development, an English reading
+edition and a reproducible proof check. It is a selected mathematical companion,
+not a complete artifact for every supplemental construction or experiment.
+It contains no benchmark runs or experiment runtime.
 
-## 阅读入口
+## Start reading
 
-| 材料 | 内容 |
+1. Read Sections 2-4 and the proof-to-claim table in the
+   [v3 paper and supplement](https://arxiv.org/pdf/2607.24162v3).
+2. Open the [English proof guide](theory/lean/AgentUCTProofGuideEN.lean).
+   Each `#check` displays an actual declaration with its explicit hypotheses.
+3. Follow the guide into the [English complete-proof edition](theory/lean/AgentUCTCompleteProofsEN.lean),
+   or use the [modular entry point](theory/lean/AgentUCTPaper.lean) when editing.
+4. See [WORKFLOW.md](WORKFLOW.md) to build and audit the proofs.
+
+The two proof editions define the same names. Import **either**
+`AgentUCTPaper` **or** `AgentUCTCompleteProofsEN` in a downstream file.
+
+## Main result and assumptions
+
+For a finite fixed-reward terminal tree, the main chain proves
+
+$$R_Q(T)\le A_D\log(T+1)+B_D.$$
+
+Here `T` counts complete training-panel evaluations, including free cache
+replays. The assumptions include legal incremental expansion, unvisited-child
+priority, raw-return ancestor backup, successful persistent compatible cache
+publication, a positive exploration coefficient, and nonnegative adaptive cold
+forecasts bounded by a fixed finite resource envelope. Instance constants and
+the positive gap bound are chosen before the history and horizon.
+
+The proof uses actual recursive backup statistics and retains the non-root
+birth offset. Coverage makes cold penalties vanish; boundedness alone does
+not establish that step.
+
+| Paper topic | Source entry |
 | --- | --- |
-| [英文数学证明与形式验证 PDF](materials/pdf/AgentUCT_Proof_Sections_EN.pdf) | 8 页，独立编号的证明阅读版 |
-| [英文完整补充材料 PDF](materials/pdf/AgentUCT_Supplement_Only_EN.pdf) | 40 页，含数学证明、附加推导及当时的实验材料 |
-| [中文 Lean 导读](theory/lean/AgentUCTProofGuide.lean) / [英文导读](theory/lean/AgentUCTProofGuideEN.lean) | 每份 96 个声明引用，编译器显示完整类型 |
-| [英文完整证明单文件](theory/lean/AgentUCTCompleteProofsEN.lean) | 全部 45 个数学源码模块的定义与证明体，按依赖顺序组织 |
-| [模块化证明入口](theory/lean/AgentUCTPaper.lean) | 维护与编辑入口；原模块保留 |
-| [证明工作流](WORKFLOW.md) | 安装、Lean 技能、LSP、tactics、编译、公理检查及 CI |
-| [验证记录](evidence/verification-20261008/verification.json) | 本仓库副本的实际构建与公理检查结果 |
-| [Linux CI 证据](evidence/ci-linux-20261008/verification.json) / [GitHub 运行](https://github.com/KataDavidXD/AgentUCT-Lean-Proofs/actions/runs/37733656335) | 干净克隆的构建、全部公开定理公理检查与两份英文 PDF 检查通过 |
-| [来源与版本](PROVENANCE.md) | AAMAS27 工作目录快照、PDF 日期、工具版本及许可证 |
+| Counts, raw means and subtree deficits | [TreeBackup](theory/lean/AgentUCTPaper/TreeBackup.lean), [TreeReturns](theory/lean/AgentUCTPaper/TreeReturns.lean), [TreeDecomposition](theory/lean/AgentUCTPaper/TreeDecomposition.lean) |
+| Execution, suffix restoration and cold-work accounting | [TreeExecution](theory/lean/AgentUCTPaper/TreeExecution.lean), [TreeCheckpoint](theory/lean/AgentUCTPaper/TreeCheckpoint.lean) |
+| Exploration, coverage and the whole-tree rate | [TreeExploration](theory/lean/AgentUCTPaper/TreeExploration.lean), [TreeCoverage](theory/lean/AgentUCTPaper/TreeCoverage.lean), [TreeRate](theory/lean/AgentUCTPaper/TreeRate.lean) |
+| Adaptive prices, completion laws and shared publication | [OnlineMean](theory/lean/AgentUCTPaper/OnlineMean.lean), [TreeSharedCache](theory/lean/AgentUCTPaper/TreeSharedCache.lean) |
+| Completion forecasts and first-unpaid pricing | [TreeCostEstimation](theory/lean/AgentUCTPaper/TreeCostEstimation.lean), [TreeNextUnpaid](theory/lean/AgentUCTPaper/TreeNextUnpaid.lean) |
+| Own-cache budgets and recommendation bounds | [TreeFiniteBudget](theory/lean/AgentUCTPaper/TreeFiniteBudget.lean), [TreeRecommendation](theory/lean/AgentUCTPaper/TreeRecommendation.lean) |
+| Demand summaries and information distinctions | [TreeDemandQuotient](theory/lean/AgentUCTPaper/TreeDemandQuotient.lean), [TreeGraphInformation](theory/lean/AgentUCTPaper/TreeGraphInformation.lean) |
+| Local pricing certificates and finite dynamic histories | [TreeDecisionValue](theory/lean/AgentUCTPaper/TreeDecisionValue.lean), [DynamicCompletion](theory/lean/AgentUCTPaper/DynamicCompletion.lean) |
 
-PDF 仅收录两份英文 **2026-10-04 独立阅读版**。本仓库的 Lean 与 LaTeX 源码来自 **2026-10-08 当前工作目录**，包括尚未提交的证明导读和步骤注释。PDF 中的实验表与 `M.` / `S.` 外部引用对应当时版本。当前理论结果以源码和本仓库的新验证记录为准。
+These are conditional mathematical statements. The development does not
+machine-verify the Python implementation, certify a model or dataset, establish
+uniform finite-budget test superiority, or extend the fixed-tree rate to
+arbitrary generated programs. Conditional stochastic and local counterexample
+modules retain their own assumptions; they are separate from the deterministic
+whole-tree argument.
 
-## 复现
+## Build and verify
 
-先安装 [elan](https://github.com/leanprover/elan)，并让 `lean`、`lake` 在 PATH 中。仓库保留 `lean-toolchain` 与 `lake-manifest.json`。
+Install [elan](https://github.com/leanprover/elan) and Python 3.11 or later,
+then run:
 
 ```sh
 git clone https://github.com/KataDavidXD/AgentUCT-Lean-Proofs.git
@@ -30,12 +71,29 @@ cd AgentUCT-Lean-Proofs
 python scripts/verify_proofs.py --bootstrap
 ```
 
-`--bootstrap` 下载所需 mathlib 编译缓存；已有环境可直接运行 `python scripts/verify_proofs.py`。验证覆盖默认构建、额外审计入口，以及模块版和英文单文件版每个公开定理的公理依赖。证明验证只需要 Python 标准库与 Lean/Lake。
+The project pins **Lean 4.24.0** and **mathlib v4.24.0** through the toolchain
+and Lake manifest. The script builds the retained sources, checks the audit
+entry points, and asks Lean for the axioms of every public theorem in each
+edition. Only `propext`, `Classical.choice` and `Quot.sound` are accepted.
+See the current [GitHub Actions run](https://github.com/KataDavidXD/AgentUCT-Lean-Proofs/actions/workflows/lean.yml)
+for the current revision's verification status.
 
-工具栈固定为 **Lean 4.24.0 + mathlib v4.24.0 + lean4-skills 4.11.3 + lean-lsp-mcp 0.30.0**。Aesop 是 mathlib 的锁定依赖；`simp`、`ring`、`linarith`、`nlinarith`、`omega` 等按目标使用。Lean 内核检查最终证明项，技能和 MCP 帮助编写与诊断。
+## Source and publication scope
 
-2026-10-08 本仓库副本验证通过：56 个 Lean 源文件、模块版与英文单文件版各 385 个公开定理公理检查、中英文导读各 96 个引用、Aesop/算术 tactics 示例；无证明占位、非标准公理或编译 error/warning。MCP 初始化、真实文件诊断、目标状态及一个定理的公理检查通过。首次客户端兼容问题及修正单独保留；Windows MCP 退出后观察到 Python pipe cleanup 的 ignored 异常，协议检查和进程 exit 0 的结果分别记录。
+The mathematical snapshot originated on 8 October 2026 and is retained here
+with its original statements. The public cleanup aligns navigation and claims
+with v3; it adds no new theorem or later construction. The repository does
+not claim coverage of every result added to the final supplement. A result's
+scope is determined by its Lean statement and the corresponding paper claim.
 
-GitHub Linux CI 同日通过，耗时 7 分 27 秒，复现了上述 56 个源码检查、两版各 385 个公开定理公理检查、96 个导读引用和英文 PDF 结构检查。证明源对应首次归档提交 `96e1206`；后续来源链接与 CI 证据提交只更新文档/记录。GitHub runner 的 Node/Ubuntu 迁移提示保留为平台注释。
+The default branch contains proof sources, the English reading aid, dependency
+locks and verification code. Earlier standalone PDFs, manuscript copies,
+development records and vendored authoring tools have been removed from the
+current tree. Use the linked arXiv paper for the published text. Git history
+retains earlier repository revisions.
 
-`vendor/` 保存 lean4-skills 与 lean-lsp-mcp 的完整固定版本源码及原许可证。mathlib 与 Aesop 由 Lake 锁定和获取；它们的编译缓存、模型权重与运行环境不进入 Git。
+[PROVENANCE.md](PROVENANCE.md) records the source boundary and rights;
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) lists external dependencies.
+
+Please cite [the paper](https://doi.org/10.48550/arXiv.2607.24162), referring to
+[v3](https://arxiv.org/abs/2607.24162v3) for this repository's claim scope.

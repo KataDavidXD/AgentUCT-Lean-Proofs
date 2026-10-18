@@ -1,6 +1,6 @@
 name = "agentuct_theory"
 version = "0.1.0"
-defaultTargets = ["AgentUCT", "AgentUCTPaper", "AgentUCTProofGuide", "AgentUCTCompleteProofsEN", "AgentUCTProofGuideEN"]
+defaultTargets = ["AgentUCT", "AgentUCTPaper", "AgentUCTCompleteProofsEN", "AgentUCTProofGuideEN"]
 
 [[require]]
 name = "mathlib"
@@ -12,9 +12,6 @@ name = "AgentUCT"
 
 [[lean_lib]]
 name = "AgentUCTPaper"
-
-[[lean_lib]]
-name = "AgentUCTProofGuide"
 
 [[lean_lib]]
 name = "AgentUCTCompleteProofsEN"

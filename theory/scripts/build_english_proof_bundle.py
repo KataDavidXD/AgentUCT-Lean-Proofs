@@ -14,7 +14,7 @@ from audit_proof_guide import lean_code
 
 THEORY = Path(__file__).resolve().parents[1]
 SOURCE = THEORY / "lean"
-EVIDENCE = THEORY / "evidence" / "proof-guide-en-20261004"
+EVIDENCE = THEORY.parent / ".verification" / "reading-edition"
 
 # English counterparts of the explanatory Chinese inline comments, in source order.
 COMMENTS = {
