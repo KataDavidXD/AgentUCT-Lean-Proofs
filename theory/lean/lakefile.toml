@@ -1,6 +1,6 @@
 name = "agentuct_theory"
 version = "0.1.0"
-defaultTargets = ["AgentUCT", "AgentUCTPaper", "AgentUCTCompleteProofsEN", "AgentUCTProofGuideEN"]
+defaultTargets = ["AgentUCT", "AgentUCTPaper", "AgentUCTCompleteProofsEN", "AgentUCTProofGuideEN", "SupplementaryProofs", "SupplementaryProofsGuideEN"]
 
 [[require]]
 name = "mathlib"
@@ -18,3 +18,408 @@ name = "AgentUCTCompleteProofsEN"
 
 [[lean_lib]]
 name = "AgentUCTProofGuideEN"
+
+[[lean_lib]]
+name = "ActionPriceTable"
+
+[[lean_lib]]
+name = "ActualIndexCertificate"
+
+[[lean_lib]]
+name = "AdverseCompleteChoices12To19"
+
+[[lean_lib]]
+name = "AdverseCompleteChoices20To27"
+
+[[lean_lib]]
+name = "AdverseCompleteChoices28To35"
+
+[[lean_lib]]
+name = "AdverseCompleteChoices36To45"
+
+[[lean_lib]]
+name = "AdverseCompleteInvoice"
+
+[[lean_lib]]
+name = "AdverseNextChoices11To18"
+
+[[lean_lib]]
+name = "AdverseNextChoices19To26"
+
+[[lean_lib]]
+name = "AdverseNextChoices27To36"
+
+[[lean_lib]]
+name = "AdverseNextInvoice"
+
+[[lean_lib]]
+name = "AdverseRetainedNet"
+
+[[lean_lib]]
+name = "BetaTwoMargins"
+
+[[lean_lib]]
+name = "BetaTwoTrajectories"
+
+[[lean_lib]]
+name = "BillingBoundary"
+
+[[lean_lib]]
+name = "BudgetP1"
+
+[[lean_lib]]
+name = "CachedSuffixCertificate"
+
+[[lean_lib]]
+name = "ChronologicalStopping"
+
+[[lean_lib]]
+name = "CompanionWindowDiagnostics"
+
+[[lean_lib]]
+name = "CompleteBudgetReporting"
+
+[[lean_lib]]
+name = "CompleteNormalQuote"
+
+[[lean_lib]]
+name = "CompletedPanelError"
+
+[[lean_lib]]
+name = "CompletedQuoteEnvelope"
+
+[[lean_lib]]
+name = "ConcreteProposals"
+
+[[lean_lib]]
+name = "ContinuationSemigroup"
+
+[[lean_lib]]
+name = "CoreLogBounds"
+
+[[lean_lib]]
+name = "DefaultBudgetP1"
+
+[[lean_lib]]
+name = "EndpointBudgetBase"
+
+[[lean_lib]]
+name = "EndpointBudgetProposals"
+
+[[lean_lib]]
+name = "EndpointInvoiceBase"
+
+[[lean_lib]]
+name = "EndpointInvoiceProposals"
+
+[[lean_lib]]
+name = "EqualBonusCancellation"
+
+[[lean_lib]]
+name = "ExtendedLogBounds"
+
+[[lean_lib]]
+name = "FavorableCompleteChoices12To19"
+
+[[lean_lib]]
+name = "FavorableCompleteChoices20To27"
+
+[[lean_lib]]
+name = "FavorableCompleteChoices28To35"
+
+[[lean_lib]]
+name = "FavorableCompleteChoices36To44"
+
+[[lean_lib]]
+name = "FavorableCompleteInvoice"
+
+[[lean_lib]]
+name = "FavorableNextChoices11To18"
+
+[[lean_lib]]
+name = "FavorableNextChoices19To26"
+
+[[lean_lib]]
+name = "FavorableNextChoices27To37"
+
+[[lean_lib]]
+name = "FavorableNextInvoice"
+
+[[lean_lib]]
+name = "FavorableRetainedNet"
+
+[[lean_lib]]
+name = "FirstContinuedChoice"
+
+[[lean_lib]]
+name = "GenericCompleteRoot"
+
+[[lean_lib]]
+name = "InitialConcreteBridge"
+
+[[lean_lib]]
+name = "InitialLogBounds"
+
+[[lean_lib]]
+name = "InvoiceFootprint"
+
+[[lean_lib]]
+name = "NativeAfterCertificate"
+
+[[lean_lib]]
+name = "NativeBudgetEndpoints"
+
+[[lean_lib]]
+name = "NativeBudgetEvents"
+
+[[lean_lib]]
+name = "NativeBudgetForecast"
+
+[[lean_lib]]
+name = "NativeBudgetGenerated"
+
+[[lean_lib]]
+name = "NativeBudgetNodeReplay"
+
+[[lean_lib]]
+name = "NativeBudgetResolver"
+
+[[lean_lib]]
+name = "NativeBudgetResources"
+
+[[lean_lib]]
+name = "NativeBudgetRewards"
+
+[[lean_lib]]
+name = "NativeBudgetRollouts"
+
+[[lean_lib]]
+name = "NativeBudgetStatistics"
+
+[[lean_lib]]
+name = "NativeBudgetWindow"
+
+[[lean_lib]]
+name = "NativeCausalEndpoints"
+
+[[lean_lib]]
+name = "NativeCausalGenerated"
+
+[[lean_lib]]
+name = "NativeCausalQuoteError"
+
+[[lean_lib]]
+name = "NativeChoiceTools"
+
+[[lean_lib]]
+name = "NativeConcreteEndpoints"
+
+[[lean_lib]]
+name = "NativeConcreteReporting"
+
+[[lean_lib]]
+name = "NativeConstraints"
+
+[[lean_lib]]
+name = "NativeDefinitionRefinement"
+
+[[lean_lib]]
+name = "NativeEightInitialization"
+
+[[lean_lib]]
+name = "NativeForecast"
+
+[[lean_lib]]
+name = "NativeGeneratedAllocation"
+
+[[lean_lib]]
+name = "NativeGrammar"
+
+[[lean_lib]]
+name = "NativeInitialization"
+
+[[lean_lib]]
+name = "NativeInvoiceCompletion"
+
+[[lean_lib]]
+name = "NativeLiveMeans"
+
+[[lean_lib]]
+name = "NativeLocalAllocation"
+
+[[lean_lib]]
+name = "NativeMarginFeasibility"
+
+[[lean_lib]]
+name = "NativeNonzeroFeasibility"
+
+[[lean_lib]]
+name = "NativeOwnCache"
+
+[[lean_lib]]
+name = "NativePanel150Witness"
+
+[[lean_lib]]
+name = "NativePrefixContinuation"
+
+[[lean_lib]]
+name = "NativeReceipt"
+
+[[lean_lib]]
+name = "NativeReceiptInvariants"
+
+[[lean_lib]]
+name = "NativeReferenceCalibration"
+
+[[lean_lib]]
+name = "NativeResolver"
+
+[[lean_lib]]
+name = "NativeResourceReceipts"
+
+[[lean_lib]]
+name = "NativeRobustRoots"
+
+[[lean_lib]]
+name = "NativeRootReference"
+
+[[lean_lib]]
+name = "NativeRootSelectors"
+
+[[lean_lib]]
+name = "NativeSelectionRun"
+
+[[lean_lib]]
+name = "NativeStopBatch"
+
+[[lean_lib]]
+name = "NativeTerminalTopology"
+
+[[lean_lib]]
+name = "NextNormalCache"
+
+[[lean_lib]]
+name = "NextNormalQuote"
+
+[[lean_lib]]
+name = "NextRootIndexBridge"
+
+[[lean_lib]]
+name = "ObservedBudgetTrajectories"
+
+[[lean_lib]]
+name = "ObservedForecastEquality"
+
+[[lean_lib]]
+name = "ObservedPhysicalWitness"
+
+[[lean_lib]]
+name = "ObservedReceiptEquality"
+
+[[lean_lib]]
+name = "ObservedSelectionEquality"
+
+[[lean_lib]]
+name = "OrderedIndexCertificate"
+
+[[lean_lib]]
+name = "OwnBillReporting"
+
+[[lean_lib]]
+name = "PanelBudgetReporting"
+
+[[lean_lib]]
+name = "PanelCausalMeans"
+
+[[lean_lib]]
+name = "PanelHomogeneous"
+
+[[lean_lib]]
+name = "PanelOrderedMaximum"
+
+[[lean_lib]]
+name = "PanelPredictionError"
+
+[[lean_lib]]
+name = "PanelReceiptBilling"
+
+[[lean_lib]]
+name = "PanelReceiptMeans"
+
+[[lean_lib]]
+name = "PanelSourceAllocator"
+
+[[lean_lib]]
+name = "PanelUnits"
+
+[[lean_lib]]
+name = "PhysicalQuoteProjection"
+
+[[lean_lib]]
+name = "PhysicalTariffInputs"
+
+[[lean_lib]]
+name = "ProposalRewards"
+
+[[lean_lib]]
+name = "RealLogCertificate"
+
+[[lean_lib]]
+name = "RepairGrammar"
+
+[[lean_lib]]
+name = "RepairHistory"
+
+[[lean_lib]]
+name = "RepairResolver"
+
+[[lean_lib]]
+name = "ReplayClosedForms"
+
+[[lean_lib]]
+name = "ReplayPrefixMembership"
+
+[[lean_lib]]
+name = "RetainedProposalQuality"
+
+[[lean_lib]]
+name = "RootHydeWarmSuffix"
+
+[[lean_lib]]
+name = "SavedBudgetBoundary"
+
+[[lean_lib]]
+name = "SavedControlMargins"
+
+[[lean_lib]]
+name = "SavedInitialPriorBoundary"
+
+[[lean_lib]]
+name = "SavedQualitySaturation"
+
+[[lean_lib]]
+name = "StoppingContinuationCore"
+
+[[lean_lib]]
+name = "TrajectoryBonus"
+
+[[lean_lib]]
+name = "UniformBonusBound"
+
+[[lean_lib]]
+name = "UniformIndexDominance"
+
+[[lean_lib]]
+name = "UnseenReceiptQuotes"
+
+[[lean_lib]]
+name = "WholeCrossingReceipts"
+
+[[lean_lib]]
+name = "WindowFiniteBudget"
+
+[[lean_lib]]
+name = "SupplementaryProofs"
+
+[[lean_lib]]
+name = "SupplementaryProofsGuideEN"

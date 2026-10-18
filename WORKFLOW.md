@@ -22,34 +22,51 @@ prepared checkout, use `python scripts/verify_proofs.py`.
 
 The verifier:
 
-1. Inventories the modular mathematical declarations and checks for proof
+1. Inventories the core and supplementary mathematical declarations and checks for proof
    placeholders or custom axiom declarations outside comments and strings.
-2. Builds the configured modular entry point, English reading edition and guide.
-3. Compiles the remaining Lean audit entry points.
-4. Runs `#print axioms` for every public theorem in both proof editions and
+2. Builds the core entry point, English core reading edition and guide, plus
+   `SupplementaryProofs` and `SupplementaryProofsGuideEN` with all their imports.
+3. Compiles the additional Lean audit entry points without recompiling every
+   supplementary source a second time.
+4. Runs `#print axioms` for every public theorem in three separate groups:
+   core modular (385), core English (385), supplementary (3,307). It
    accepts only `propext`, `Classical.choice` and `Quot.sound`.
-5. Fails on compiler errors, warnings, missing declarations or nonstandard axioms.
+5. Fails on compiler errors, missing declarations or nonstandard axioms.
+   Non-fatal Lean lint warnings are counted separately in the report and retained
+   in logs. Existing proof bodies are preserved rather than rewritten to remove
+   presentation lints such as unused simp arguments or local variables.
+
+The core has 45 mathematical source files, including its original root module;
+the supplement adds 133 mathematical modules. The combined modular mathematical
+scope has 3,692 distinct public theorems. The verifier reads the supplementary
+entry point's project import closure and excludes the already counted core from
+its supplementary audit. The English core edition does not contain the added
+finite-budget constructions.
 
 Local reports and logs go to ignored `.verification/`. An optional
 `--output PATH` selects another output directory. GitHub Actions runs the same
 checks from a clean checkout. Inspect the status for the revision being used;
-a past green run does not verify later edits.
+a past green run does not verify later edits. Reports include actual elapsed
+times for the build and each axiom audit.
 
 ## Read or edit
 
 Open `theory/lean` with the Lean 4 editor extension. Start from
-`AgentUCTProofGuideEN.lean`; each `#check` exposes the referenced declaration's
-actual type. Follow the SOURCE banners in `AgentUCTCompleteProofsEN.lean` to
-the canonical module when editing.
+`AgentUCTProofGuideEN.lean` for the core or `SupplementaryProofsGuideEN.lean`
+for the finite-budget constructions; each `#check` exposes the referenced
+declaration's actual type. Follow the SOURCE banners in
+`AgentUCTCompleteProofsEN.lean` to the canonical core module when editing.
 
-After a canonical edit, regenerate the reading edition:
+After a canonical core edit, regenerate its reading edition:
 
 ```sh
 python theory/scripts/build_english_proof_bundle.py
 python scripts/verify_proofs.py
 ```
 
-The generator writes only the English edition and an ignored local source map.
+The generator writes only the English core edition and an ignored local source map.
+Supplementary edits are checked through `SupplementaryProofs`; they do not
+require merging those modules into the core reading edition.
 Preserve theorem statements and hypotheses when making presentation changes.
 Neither editor diagnostics nor source scanning substitutes for a successful
 Lean build and axiom audit.

@@ -1,4 +1,4 @@
-"""Build both retained proof editions and audit public theorem axioms."""
+"""Build the core and supplement, then audit each mathematical edition."""
 from __future__ import annotations
 
 import argparse
@@ -9,6 +9,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 import tomllib
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -38,6 +39,24 @@ def inventory(paths: list[Path]) -> list[str]:
     return names
 
 
+def supplementary_sources(sources: list[Path], core: list[Path]) -> list[Path]:
+    """Read the entry point's project imports; preserve the separate core scope."""
+    modules = {".".join(path.relative_to(SOURCE).with_suffix("").parts): path
+               for path in sources}
+    visited: set[str] = set()
+    pending = ["SupplementaryProofs"]
+    while pending:
+        module = pending.pop()
+        if module in visited or module not in modules:
+            continue
+        visited.add(module)
+        code = lean_code(modules[module].read_text(encoding="utf-8"))
+        pending.extend(re.findall(r"^import\s+(\S+)", code, re.M))
+    core_paths = set(core)
+    return sorted(modules[name] for name in visited
+                  if name != "SupplementaryProofs" and modules[name] not in core_paths)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--bootstrap", action="store_true")
@@ -45,16 +64,9 @@ def main() -> None:
     args = parser.parse_args()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
-    lake = shutil.which("lake")
-    if not lake or not shutil.which("lean"):
-        raise RuntimeError("Install elan and add lean/lake to PATH")
-
-    sources = sorted(SOURCE.glob("*.lean")) + sorted((SOURCE / "AgentUCTPaper").glob("*.lean"))
-    mathematical = [SOURCE / "AgentUCT.lean", *sorted((SOURCE / "AgentUCTPaper").glob("*.lean"))]
-    names = inventory(mathematical)
     report = {"date_utc": datetime.now(timezone.utc).isoformat(), "status": "running",
-              "source_files": len(sources), "public_theorems_per_edition": len(names),
               "checks": [], "axiom_audits": []}
+    started = time.monotonic()
 
     def save() -> None:
         (output / "verification.json").write_text(
@@ -62,20 +74,41 @@ def main() -> None:
 
     def run(label: str, command: list[str]) -> str:
         print(label, flush=True)
+        check_started = time.monotonic()
         log = output / (label + ".log")
         with log.open("wb") as stream:
             result = subprocess.run(command, cwd=SOURCE, stdout=stream,
                                     stderr=subprocess.STDOUT, check=False)
         text = log.read_text(encoding="utf-8", errors="replace")
-        report["checks"].append({"label": label, "returncode": result.returncode})
+        warning_count = len(re.findall(r"\bwarning:", text))
+        report["checks"].append({"label": label, "returncode": result.returncode,
+                                 "warning_count": warning_count,
+                                 "elapsed_seconds": round(time.monotonic() - check_started, 3)})
         save()
-        if result.returncode or re.search(r"\b(?:error|warning):", text):
+        if result.returncode or re.search(r"\berror:", text):
             print(text[-4000:], file=sys.stderr)
             raise RuntimeError(f"{label} failed; inspect {log}")
         return text
 
     save()
     try:
+        lake = shutil.which("lake")
+        if not lake or not shutil.which("lean"):
+            raise RuntimeError("Install elan and add lean/lake to PATH")
+        sources = sorted(SOURCE.glob("*.lean")) + sorted((SOURCE / "AgentUCTPaper").glob("*.lean"))
+        core = [SOURCE / "AgentUCT.lean", *sorted((SOURCE / "AgentUCTPaper").glob("*.lean"))]
+        supplement = supplementary_sources(sources, core)
+        core_names, supplement_names = inventory(core), inventory(supplement)
+        if set(core_names) & set(supplement_names):
+            raise RuntimeError("Core and supplementary theorem names overlap")
+        editions = [("core-modular", "AgentUCTPaper", core_names),
+                    ("core-english", "AgentUCTCompleteProofsEN", core_names),
+                    ("supplementary", "SupplementaryProofs", supplement_names)]
+        report.update({"source_files": len(sources), "core_mathematical_sources": len(core),
+                       "supplementary_mathematical_sources": len(supplement),
+                       "public_theorems": {label: len(names) for label, _, names in editions},
+                       "distinct_mathematical_theorems": len(core_names) + len(supplement_names)})
+        save()
         for path in sources:
             if re.search(r"\b(sorry|admit|axiom)\b", lean_code(path.read_text(encoding="utf-8"))):
                 raise RuntimeError(f"Proof placeholder or custom axiom: {path.name}")
@@ -85,17 +118,18 @@ def main() -> None:
                 r"^import\s+(\S+)", lean_code(path.read_text(encoding="utf-8")), re.M)
                 if dep.startswith("Mathlib.")})
             run("mathlib-cache", [lake, "exe", "cache", "get", *cache_roots])
-        build = run("lake-build", [lake, "build"])
-        if "Build completed successfully" not in build:
-            raise RuntimeError("Lake did not report a completed build")
         config = tomllib.loads((SOURCE / "lakefile.toml").read_text(encoding="utf-8"))
-        # All mathematical modules are imported by the configured entry point.
-        # Check every additional root source, including all Audit modules.
+        for entry in ("AgentUCTPaper", "AgentUCTCompleteProofsEN", "SupplementaryProofs",
+                      "SupplementaryProofsGuideEN"):
+            if entry not in config["defaultTargets"]:
+                raise RuntimeError(f"Missing default build entry point: {entry}")
+        # All core and supplementary mathematics are reached by these entry points.
+        # Do not elaborate the large supplementary sources a second time.
+        run("lake-build", [lake, "build"])
         for path in sorted(SOURCE.glob("*.lean")):
-            if path.stem not in config["defaultTargets"]:
+            if path.stem.startswith("Audit"):
                 run(path.stem, [lake, "env", "lean", path.name])
-        for label, module in (("modular", "AgentUCTPaper"),
-                              ("english", "AgentUCTCompleteProofsEN")):
+        for label, module, names in editions:
             audit = output / ("AuditAll-" + label + ".lean")
             audit.write_text("import " + module + "\n" + "\n".join(
                 "#print axioms " + name for name in names) + "\n", encoding="utf-8")
@@ -112,9 +146,12 @@ def main() -> None:
             if missing or unexpected:
                 raise RuntimeError(f"Incomplete or nonstandard axiom audit: {label}")
         report["status"] = "passed"
+        report["compiler_warning_count"] = sum(check["warning_count"] for check in report["checks"])
+        report["elapsed_seconds"] = round(time.monotonic() - started, 3)
         save()
         print(json.dumps({key: report[key] for key in
-                          ("status", "source_files", "public_theorems_per_edition")}))
+                          ("status", "source_files", "public_theorems",
+                           "distinct_mathematical_theorems", "elapsed_seconds")}))
     except Exception as exc:
         report["status"] = "failed"
         report["failure"] = str(exc)

@@ -1,16 +1,17 @@
 import AgentUCTCompleteProofsEN
 
 /-!
-# AgentUCT: an English guide to the complete Lean proofs
+# AgentUCT: an English guide to the core Lean proofs
 
 ## How to read this development
 
 Open this file in VS Code with the Lean 4 extension, from the directory containing
 lakefile.toml. Place the cursor on a #check command to see the declaration's complete
 type in the Lean Infoview. Go to Definition opens the complete proof in
-AgentUCTCompleteProofsEN.lean. That file contains every project definition and proof
+AgentUCTCompleteProofsEN.lean. That file contains every core definition and proof
 body, arranged by import dependencies, with a SOURCE banner for each original file.
-AgentUCT.lean and AgentUCTPaper/*.lean are the canonical modular sources.
+AgentUCT.lean and AgentUCTPaper/*.lean are the canonical modular core sources.
+For the separate 13M/32M constructions, read SupplementaryProofsGuideEN.lean.
 
 A theorem has the form `theorem name (inputs) (h : assumption) : conclusion := by ...`.
 Read its type first: hypotheses are part of the claim. Then follow the named `have`
